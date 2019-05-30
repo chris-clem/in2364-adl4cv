@@ -6,7 +6,7 @@
 
 
 # Dependency
-> See requirements.txt
+> See requirements.txt for condaenv
 
 # Remarks
 
