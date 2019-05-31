@@ -13,6 +13,11 @@
 ## References
 
 ## ToDos
-[ ] Check which sequences to use [Christoph]
+[x] Check which sequences to use [Christoph]
+```python
+bad_sequences = ['bmx-trees', 'bus', 'cows', 'dog-agility', 'horsejump-high', 'horsejump-low', 
+                 'kite-walk', 'lucia', 'libby', 'motorbike', 'paragliding', 'rhino', 'scooter-gray', 
+                 'swing']
+```
 [ ] Extract OSVOS feature vectors [Max]
 [ ] Start with Graph implementation [both]
