@@ -21,3 +21,7 @@ bad_sequences = ['bmx-trees', 'bus', 'cows', 'dog-agility', 'horsejump-high', 'h
 ```
 - [ ] Extract OSVOS feature vectors [Max]
 - [ ] Start with Graph implementation [both]
+    - [ ] Create PyTorch Geometric dataset: https://rusty1s.github.io/pytorch_geometric/build/html/notes/create_dataset.html
+    - [ ] Decide which GCN implementation to use: https://rusty1s.github.io/pytorch_geometric/build/html/notes/create_gnn.html, https://github.com/rusty1s/pytorch_geometric/tree/master/examples
+    - [ ] Implement GCN
+
