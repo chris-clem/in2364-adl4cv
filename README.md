@@ -3,7 +3,8 @@
 
 ## Repository Structure
 - **download_DAVIS_2016.sh**: Downloads DAVIS 2016 dataset and saves it to **DAVIS_2016**
-- **contour_extraction.ipynb**: Extracts contours from DAVIS 2016 annotations for ground truth generation
+- **create_contours.ipynb**: Creates contours from DAVIS 2016 annotations for ground truth generation
+- **create_translations.ipynb**: Creates translations for contours
 
 ## Dependencies
 > See requirements.txt for condaenv
