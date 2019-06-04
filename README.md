@@ -6,7 +6,8 @@
 - **contour_extraction.ipynb**: Extracts contours from DAVIS 2016 annotations for ground truth generation
 
 ## Dependencies
-> See requirements.txt for condaenv
+> See spec-file_linux.txt for condaenv for ubuntu 16.04
+> See spec-file_win64.txt for condaenv for windows 10
 
 ## Remarks
 
@@ -21,7 +22,3 @@ bad_sequences = ['bmx-trees', 'bus', 'cows', 'dog-agility', 'horsejump-high', 'h
 ```
 - [ ] Extract OSVOS feature vectors [Max]
 - [ ] Start with Graph implementation [both]
-    - [ ] Create PyTorch Geometric dataset: https://rusty1s.github.io/pytorch_geometric/build/html/notes/create_dataset.html
-    - [ ] Decide which GCN implementation to use: https://rusty1s.github.io/pytorch_geometric/build/html/notes/create_gnn.html, https://github.com/rusty1s/pytorch_geometric/tree/master/examples
-    - [ ] Implement GCN
-
