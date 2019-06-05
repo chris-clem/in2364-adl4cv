@@ -114,7 +114,7 @@ for epoch in range(0, nEpochs):
     running_loss_tr = 0
     np.random.seed(seed + epoch)
     for ii, sample_batched in enumerate(trainloader):
-
+    	print("test")
         inputs, gts = sample_batched['image'], sample_batched['gt']
 
         # Forward-Backward of the mini-batch
