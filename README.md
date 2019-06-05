@@ -13,8 +13,8 @@
 - **PyTorch_Geometric_Datasets**: Folder to store PG DAVIS 2016 dataset
 
 ## Dependencies
-> See spec-file_linux.txt for condaenv for ubuntu 16.04
-> See spec-file_win64.txt for condaenv for windows 10
+- See spec-file_linux.txt for condaenv for ubuntu 16.04
+- See spec-file_win64.txt for condaenv for windows 10
 
 
 ## ToDos
@@ -28,7 +28,3 @@ SKIP_SEQUENCES = ['bmx-trees', 'bus', 'cows', 'dog-agility', 'horsejump-high',
 <<<<<<< HEAD
 - [x] Create PyTorch Geometric Dataset
 - [x] Decide which GCN implementation to use: https://github.com/rusty1s/pytorch_geometric/blob/master/examples/dgcnn_classification.py 
-
-=======
-- [ ] Start with Graph implementation [both]
->>>>>>> c2bfc90a2a93e307ba0e06c551a7b0b5234e6f28
