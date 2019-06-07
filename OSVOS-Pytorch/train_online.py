@@ -38,7 +38,7 @@ if not os.path.exists(save_dir):
 vis_net = 0  # Visualize the network?
 vis_res = 0  # Visualize the results?
 nAveGrad = 5  # Average the gradient every nAveGrad iterations
-nEpochs = 2000 * nAveGrad  # Number of epochs for training
+nEpochs = 50 * nAveGrad  # Number of epochs for training #CHANGED
 snapshot = nEpochs  # Store a model every snapshot epochs
 parentEpoch = 240
 
@@ -110,11 +110,11 @@ print("Start of Online Training, sequence: " + seq_name)
 start_time = timeit.default_timer()
 # Main Training and Testing Loop
 for epoch in range(0, nEpochs):
+    print('epoch:', epoch, '/', nEpochs)
     # One training epoch
     running_loss_tr = 0
     np.random.seed(seed + epoch)
     for ii, sample_batched in enumerate(trainloader):
-    	print("test")
         inputs, gts = sample_batched['image'], sample_batched['gt']
 
         # Forward-Backward of the mini-batch
@@ -126,7 +126,6 @@ for epoch in range(0, nEpochs):
         # Compute the fuse loss
         loss = class_balanced_cross_entropy_loss(outputs[-1], gts, size_average=False)
         running_loss_tr += loss.item()  # PyTorch 0.4.0 style
-
         # Print stuff
         if epoch % (nEpochs//20) == (nEpochs//20 - 1):
             running_loss_tr /= num_img_tr
