@@ -30,16 +30,16 @@ SKIP_SEQUENCES = ['bmx-trees', 'bus', 'cows', 'dog-agility', 'horsejump-high',
 - [x] Define train and val sequences [Christoph]
 ```python
 TRAIN_SEQUENCES = ['bear', 'bmx-bumps', 'boat', 'breakdance-flare', 'bus', 
-		   'car-turn', 'dance-jump', 'dog-agility', 'drift-turn', 
-		   'elephant', 'flamingo', 'hike', 'hockey', 'horsejump-low', 
-		   'kite-walk', 'lucia', 'mallard-fly', 'mallard-water', 
-		   'motocross-bumps', 'motorbike', 'paragliding', 'rhino', 
-		   'rollerblade', 'scooter-gray', 'soccerball', 'stroller',
-		   'surf', 'swing', 'tennis', 'train']
+                   'car-turn', 'dance-jump', 'dog-agility', 'drift-turn', 
+                   'elephant', 'flamingo', 'hike', 'hockey', 'horsejump-low', 
+                   'kite-walk', 'lucia', 'mallard-fly', 'mallard-water', 
+                   'motocross-bumps', 'motorbike', 'paragliding', 'rhino', 
+                   'rollerblade', 'scooter-gray', 'soccerball', 'stroller',
+                   'surf', 'swing', 'tennis', 'train']
 
 VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabout',
-		 'car-shadow', 'cows', 'dance-twirl', 'dog', 'drift-chicane', 
-		 'drift-straight', 'goat', 'horsejump-high', 'kite-surf', 'libby', 
-		 'motocross-jump', 'paragliding-launch', 'parkour', 'scooter-black', 
-		 'soapbox']
+                 'car-shadow', 'cows', 'dance-twirl', 'dog', 'drift-chicane', 
+                 'drift-straight', 'goat', 'horsejump-high', 'kite-surf', 'libby', 
+                 'motocross-jump', 'paragliding-launch', 'parkour', 'scooter-black', 
+                 'soapbox']
 ```
