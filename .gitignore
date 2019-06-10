@@ -1,1 +1,6 @@
 .ipynb_checkpoints
+
+pg_datasets/DAVIS_2016/*
+pg_datasets/__pycache__
+pg_datasets/.ipynb_checkpoints
+
