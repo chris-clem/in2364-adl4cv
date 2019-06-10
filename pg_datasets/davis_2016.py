@@ -11,16 +11,19 @@ from pg_datasets.create_data import create_data
 
 
 class DAVIS2016(InMemoryDataset):
-    def __init__(self, root, contours_folders_path, translations_folders_path, k, skip_sequences,
-                 transform=None, pre_transform=None):
+    def __init__(self, root, contours_folders_path, translations_folders_path, k, 
+                 skip_sequences, train_sequences, val_sequences,
+                 train=True, transform=None, pre_transform=None):
         
         self.contours_folders_path = contours_folders_path
         self.translations_folders_path = translations_folders_path 
         self.k = k
         self.skip_sequences = skip_sequences
+        self.train_sequences = train_sequences
+        self.val_sequences = val_sequences
         
         super(DAVIS2016, self).__init__(root, transform, pre_transform)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        path = self.processed_paths[0] if train else self.processed_paths[1]
         
     @property
     def raw_file_names(self):
@@ -29,7 +32,7 @@ class DAVIS2016(InMemoryDataset):
 
     @property
     def processed_file_names(self):
-        return ['data.pt']
+        return ['train.pt', 'val.pt']
 
     def download(self):
         # Copy Contours folder to raw_dir
@@ -47,17 +50,15 @@ class DAVIS2016(InMemoryDataset):
         # Get list of folders (there is one for each sequence)
         translations_folders_list = os.listdir(raw_path_translations)
         
-        # Create empty data list to which Data objects will be added
-        data_list = []
+        # Create empty data lists to which Data objects will be added
+        train_data_list = []
+        val_data_list = []
         
         # Iterate through folders 
         for i, folder in enumerate(translations_folders_list):
             
             # Skip if it is a bad sequence
             if (folder in self.skip_sequences): continue
-            
-            # Debug
-            # if (i > 2): break
             
             print('#{}: {}'.format(i, folder))
             
@@ -72,11 +73,6 @@ class DAVIS2016(InMemoryDataset):
             # Iterate through translations
             for j, translation in enumerate(translations):
                 
-                # Debug
-                # if (j > 4): break
-                
-                # print('\t#{}: {}'.format(j, translation))
-                
                 # Load corresponding contour
                 contour_path = os.path.join(contours_folder_path, translation)
                 contour = np.load(contour_path)
@@ -85,15 +81,22 @@ class DAVIS2016(InMemoryDataset):
                 translation_path = os.path.join(translations_folder_path, translation)
                 translation = np.load(translation_path)
                 
-                # Get data and append it to data_list
+                # Get data and append it to corresponding data_list
                 data = create_data(contour, translation, self.k)
-                data_list.append(data)
+
+                if folder in self.train_sequences:
+                    train_data_list.append(data)
+                else:
+                    val_data_list.append(data)
                 
         if self.pre_filter is not None:
-            data_list = [data for data in data_list if self.pre_filter(data)]
+            train_data_list = [data for data in train_data_list if self.pre_filter(data)]
+            val_data_list = [data for data in val_data_list if self.pre_filter(data)]
 
         if self.pre_transform is not None:
-            data_list = [self.pre_transform(data) for data in data_list]
-        
-        data, slices = self.collate(data_list)
-        torch.save((data, slices), self.processed_paths[0])
+            train_data_list = [self.pre_transform(data) for data in train_data_list]
+            val_data_list = [self.pre_transform(data) for data in val_data_list]
+
+        for i, data_list in enumerate([train_data_list, val_data_list]): 
+            data, slices = self.collate(data_list)
+            torch.save((data, slices), self.processed_paths[i])
