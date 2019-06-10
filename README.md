@@ -5,7 +5,7 @@
 - **download_DAVIS_2016.sh**: Downloads DAVIS 2016 dataset and saves it to **DAVIS_2016**
 - **create_contours.ipynb**: Saves contour points of DAVIS 2016 annotations as numpy arrays
 - **create_translations.ipynb**: Saves translations between points of two consecutive contours as numpy arrarys
-- **create_PG_DAVIS_2016_dataset.ipynb**: Creates a custom PyTorch Geometric InMemoryDataset for the DAVIS 2016 dataset
+- **gcn_davis_2016.ipynb**: Creates a custom PyTorch Geometric InMemoryDataset for the DAVIS 2016 dataset and trains a simple GCN.
 - **DAVIS_2016**: Folder in which DAVIS 2016 dataset is stored
 - **Experiments**: Folder in which PyTorch Geometric tutorials are stored
 - **Images**: Folder in which images used in notebooks are stored
@@ -25,6 +25,5 @@ SKIP_SEQUENCES = ['bmx-trees', 'bus', 'cows', 'dog-agility', 'horsejump-high',
                   'paragliding', 'rhino', 'scooter-gray', 'swing']
 ```
 - [ ] Extract OSVOS feature vectors [Max]
-<<<<<<< HEAD
 - [x] Create PyTorch Geometric Dataset
 - [x] Decide which GCN implementation to use: https://github.com/rusty1s/pytorch_geometric/blob/master/examples/dgcnn_classification.py 
