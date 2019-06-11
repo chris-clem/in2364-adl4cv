@@ -10,7 +10,7 @@ from torch_geometric.utils import to_undirected
 import OSVOS_PyTorch.networks.vgg_osvos as vo
 
 
-def get_OSVOS_feature_vectors(key_point_positions, layer, img_path, model_path):
+def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
     """
     Function takes list of keypoints as input and outputs OSVOS feature vector for each point
     key point positions list of tuples [(x, y), ...]
@@ -23,44 +23,22 @@ def get_OSVOS_feature_vectors(key_point_positions, layer, img_path, model_path):
     #4th CONV block 17-23 --> Shape: [1, 512, 60, 107] --> Receptive field: 34 * 2 + 6 = 74
     #5th CONV block 24-30 --> Shape: [1, 512, 30, 54] --> Receptive field: 74 * 2 + 6 = 154
 
+    print(key_point_positions.shape)
     #Load test image and transform it in (C, H, W)
     img = np.moveaxis(imread(img_path), 2, 0).astype(float)
     img = np.expand_dims(img, axis=0)
     img = torch.from_numpy(img)
-    print('Image shape:', img.numpy().shape)
-
-    #Load model
-    model = vo.OSVOS(pretrained=0)
-    model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
-    model.eval()
-
-    #Define layer as output
-    #print('\nSTAGES\n\n', len(model.stages), model.stages)
-    #print('\nUPSCALE\n\n', len(model.upscale), model.upscale)
-    #print('\nside_prep\n\n', len(model.side_prep), model.side_prep)
-    #print('\nscore_dsn\n\n', len(model.score_dsn), model.score_dsn)
-    #print('\nupscale_\n\n', len(model.upscale_), model.upscale_)
-    #print('\nfuse\n\n', model.fuse)
-
-    children = []
-    for num, stage in enumerate(model.stages):
-        #print(type(stage), '\n', stage, '\n\n')
-        if type(stage) == torch.nn.modules.container.Sequential:
-        	for child in stage.children():
-        		children.append(child)
-
-    print('Create model for feature_vector after', len(children[:layer]), 'layers...')
-    new_model = nn.Sequential(*children[:layer])
-    new_model = new_model.double()
-    new_model.eval()
-
-    feature_vector = new_model(img)
-    print('Feature vector shape:', feature_vector.shape)
+    
+    gpu_id = 0
+    device = torch.device("cuda:"+str(gpu_id) if torch.cuda.is_available() else "cpu")
+    img = img.to(device)
+    
+#    print('Feature vector shape:', feature_vector.shape)
 
     #Extract vector out of output tensor depending on keypoint location
     #Compute receptive fields for every feature vector. --> Select feature vector which receptive field center is closest to key point
-    _, _, height_img, width_img = img.numpy().shape
-    _, _, height_fv, width_fv = feature_vector.detach().numpy().shape
+    _, _, height_img, width_img = img.cpu().numpy().shape
+    _, _, height_fv, width_fv = feature_vector.detach().cpu().numpy().shape
 
     feature_vectors = []
     for key_point_position in key_point_positions:
@@ -91,14 +69,14 @@ def get_edge_attribute(contour, edge_index):
     return torch.from_numpy(edge_atrr)
 
 
-def create_data(contour, translation, layer, img_path, model_path, k):
+def create_data(contour, translation, img_path, new_model, k):
     '''Returns data object.'''
     
     # x: Node feature matrix with shape [num_nodes, num_node_features]
     # The feature of each node is the OSVOS feature vector of the next frame
     # TODO 
     # x = get_OSVOS_feature_vectors(contour)
-    x = get_OSVOS_feature_vectors(contour, layer, img_path, model_path)
+    x = get_OSVOS_feature_vectors(contour, img_path, new_model)
 
     # edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
     # Each node should be connected to its K nearest neighbours

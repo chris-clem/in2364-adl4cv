@@ -4,3 +4,10 @@ pg_datasets/DAVIS_2016/*
 pg_datasets/__pycache__
 pg_datasets/.ipynb_checkpoints
 
+OSVOS_PyTorch/models/runs/
+OSVOS_PyTorch/__pycache__/*
+OSVOS_PyTorch/dataloaders/__pychache__/*
+OSVOS_PyTorch/mypath.py
+OSVOS_PyTorch/networks/__pycache__/*
+OSVOS_PyTorch/util/__pycache__/*
+
