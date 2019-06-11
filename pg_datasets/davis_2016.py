@@ -11,13 +11,22 @@ from pg_datasets.create_data import create_data
 
 
 class DAVIS2016(InMemoryDataset):
-    def __init__(self, root, contours_folders_path, translations_folders_path, k, 
+    def __init__(self, root, contours_folders_path, images_folders_path, 
+                 translations_folders_path, model_path,
+                 layer, k, 
                  skip_sequences, train_sequences, val_sequences,
                  train=True, transform=None, pre_transform=None):
-        
+        # Paths    
         self.contours_folders_path = contours_folders_path
-        self.translations_folders_path = translations_folders_path 
+        self.images_folders_path = images_folders_path
+        self.translations_folders_path = translations_folders_path
+        self.model_path = model_path
+        
+        # Hyperparameters
+        self.layer = layer
         self.k = k
+        
+        # Sequences
         self.skip_sequences = skip_sequences
         self.train_sequences = train_sequences
         self.val_sequences = val_sequences
@@ -27,7 +36,7 @@ class DAVIS2016(InMemoryDataset):
         
     @property
     def raw_file_names(self):
-        raw_file_names = ['Contours', 'Translations']
+        raw_file_names = ['Contours', 'JPEGImages', 'Translations']
         return raw_file_names
 
     @property
@@ -39,13 +48,17 @@ class DAVIS2016(InMemoryDataset):
         raw_dir_contours = os.path.join(self.raw_dir, 'Contours')
         copy_tree(self.contours_folders_path, raw_dir_contours)
         
+        # Copy JPEGImages folder to raw_dir
+        raw_dir_images = os.path.join(self.raw_dir, 'JPEGImages')
+        copy_tree(self.images_folders_path, raw_dir_images)
+        
         # Copy Translations folder to raw_dir
         raw_dir_translations = os.path.join(self.raw_dir, 'Translations')
         copy_tree(self.translations_folders_path, raw_dir_translations)
         
     def process(self):
         # Get paths to Contours and Translations
-        raw_path_contours, raw_path_translations = self.raw_paths
+        raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
         # Get list of folders (there is one for each sequence)
         translations_folders_list = os.listdir(raw_path_translations)
@@ -64,6 +77,7 @@ class DAVIS2016(InMemoryDataset):
             
             # Get paths to current sequence in Contours and Translations folders
             contours_folder_path = os.path.join(raw_path_contours, folder)
+            images_folder_path = os.path.join(raw_path_images, folder)
             translations_folder_path = os.path.join(raw_path_translations, folder)
             
             # Get list of translations (one for each frame in the sequence)
@@ -77,12 +91,15 @@ class DAVIS2016(InMemoryDataset):
                 contour_path = os.path.join(contours_folder_path, translation)
                 contour = np.load(contour_path)
                 
+                # Get image path
+                image_path = os.path.join(images_folder_path, translation[:5] + '.jpg')
+                
                 # Load corresponding sequence
                 translation_path = os.path.join(translations_folder_path, translation)
                 translation = np.load(translation_path)
                 
                 # Get data and append it to corresponding data_list
-                data = create_data(contour, translation, self.k)
+                data = create_data(contour, translation, self.layer, image_path, self.model_path, self.k)
 
                 if folder in self.train_sequences:
                     train_data_list.append(data)

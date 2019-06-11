@@ -1,4 +1,4 @@
-from util.path_abstract import PathAbstract
+from OSVOS_PyTorch.util.path_abstract import PathAbstract
 
 
 class Path(PathAbstract):

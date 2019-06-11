@@ -1,4 +1,3 @@
-
 """
 TODOS
 --> Model has to be loaded for each image --> Load model once per sequence
@@ -10,38 +9,12 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 
-import networks.vgg_osvos as vo
+import OSVOS_PyTorch.networks.vgg_osvos as vo
 
 from torchsummary import summary
 import numpy as np
 from scipy.misc import imread, imsave, imresize
 
-"""
-class VectorGetter(object):
-    def __init__(self, layer_name, MODEL):
-        self.model = MODEL
-        self.model.eval()
-        self.to_tensor = transforms.ToTensor()
-        self.layer = self.model._modules.get(layer_name)
-
-    def get_vector(self, path):
-
-        im_object =Image.open(path)
-
-        t_img = Variable(
-            self.normalize(self.to_tensor(self.scaler(im_object))).unsqueeze(0)
-        )
-        my_embedding = torch.zeros(512)
-
-        def copy_data(m, i, o):
-            my_embedding.copy_(o.data.squeeze())
-
-        h = self.layer.register_forward_hook(copy_data)
-        self.model(t_img)
-        h.remove()
-
-        return path, my_embedding.data.numpy().astype(DTYPE)
-"""
 
 def get_OSVOS_feature(key_point_positions, layer, img_path, model_path):
     """
@@ -106,9 +79,9 @@ def get_OSVOS_feature(key_point_positions, layer, img_path, model_path):
 
 
 
-key_point_positions = [(7, 167), (15, 33)]
-layer = 9
-img_path = '/home/max/in2364-adl4cv/DAVIS_2016/DAVIS/JPEGImages/480p/blackswan/00000.jpg'
-model_path = '/home/max/in2364-adl4cv/OSVOS-Pytorch/models/blackswan_epoch-249.pth'
+# key_point_positions = [(7, 167), (15, 33)]
+# layer = 9
+# img_path = '../DAVIS_2016/DAVIS/JPEGImages/480p/blackswan/00000.jpg'
+# model_path = 'models/parent_epoch-239.pth'
 
-get_OSVOS_feature(key_point_positions, layer, img_path, model_path)
+# get_OSVOS_feature(key_point_positions, layer, img_path, model_path)

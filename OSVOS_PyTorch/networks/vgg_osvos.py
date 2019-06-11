@@ -9,8 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.modules as modules
 
-from layers.osvos_layers import center_crop, interp_surgery
-from mypath import Path
+from OSVOS_PyTorch.layers.osvos_layers import center_crop, interp_surgery
+from OSVOS_PyTorch.mypath import Path
 
 
 class OSVOS(nn.Module):
