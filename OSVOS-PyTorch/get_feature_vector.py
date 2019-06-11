@@ -50,74 +50,64 @@ def get_OSVOS_feature(key_point_positions, layer, img_path, model_path):
 
     """
 
+    #1st CONV block 1-4 --> Shape: [1, 64, 480, 854] --> Receptive field: 5
+    #2nd CONV block 5-9 --> Shape: [1, 128, 240, 427] --> Receptive field: 5 * 2(pooling) + 4 = 14
+    #3rd CONV block 10-16 --> Shape: [1, 256, 120, 214] --> Receptive field: 14 * 2 + 6 = 34
+    #4th CONV block 17-23 --> Shape: [1, 512, 60, 107] --> Receptive field: 34 * 2 + 6 = 74
+    #5th CONV block 24-30 --> Shape: [1, 512, 30, 54] --> Receptive field: 74 * 2 + 6 = 154
+
     #Load test image and transform it in (C, H, W)
-    test_img = np.moveaxis(imread(img_path), 2, 0).astype(float)
-    test_img = np.expand_dims(test_img, axis=0)
-    test_img = torch.from_numpy(test_img)
-    #print(test_img)
-    print('Test image shape:', test_img.shape)
+    img = np.moveaxis(imread(img_path), 2, 0).astype(float)
+    img = np.expand_dims(img, axis=0)
+    img = torch.from_numpy(img)
+    print('Image shape:', img.numpy().shape)
 
     #Load model
     model = vo.OSVOS(pretrained=0)
-    model = model.float()
     model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
     model.eval()
-    print('\nOLD MODEL')
-    print(type(model))
-    print(model.upscale)
-
-    summary(model, (3, 480, 854))
-
-    test_output = model.forward(test_img.float())
-    test_output = np.squeeze(test_output[0].detach().numpy(), axis=(0,1))
-    print(test_output.shape)
-    imsave('/home/max/in2364-adl4cv/test.png', test_output*255)
 
     #Define layer as output
+    #print('\nSTAGES\n\n', len(model.stages), model.stages)
+    #print('\nUPSCALE\n\n', len(model.upscale), model.upscale)
+    #print('\nside_prep\n\n', len(model.side_prep), model.side_prep)
+    #print('\nscore_dsn\n\n', len(model.score_dsn), model.score_dsn)
+    #print('\nupscale_\n\n', len(model.upscale_), model.upscale_)
+    #print('\nfuse\n\n', model.fuse)
+
     children = []
-    for num, child in enumerate(model.children()):
-        if type(child) == torch.nn.modules.conv.Conv2d:
-            #print(child)
-            children.append(child)
-        else:
-            for idx in range(child.__len__()):
-                child_child = child.__getitem__(idx)
-                if type(child_child) == torch.nn.modules.container.Sequential:
-                    for idx2 in range(child_child.__len__()):
-                        child_child_child = child_child.__getitem__(idx2)
-                        children.append(child_child_child)
-                        #print(child_child_child)                       
-                else:
-                    children.append(child_child)
-                    #print(child_child)
+    for num, stage in enumerate(model.stages):
+        #print(type(stage), '\n', stage, '\n\n')
+        if type(stage) == torch.nn.modules.container.Sequential:
+        	for child in stage.children():
+        		children.append(child)
 
-    print(len(children))
-    #Adapted manually
-    #children[0] = torch.nn.ConvTranspose2d(3, 16, (4, 4), stride=(2,2), bias=False)
-
-
-
-    print('\nNEW MODEL')
-    new_model = nn.Sequential(*children)
-    print(type(new_model))
+    print('Create model for feature_vector after', len(children[:layer]), 'layers...')
+    new_model = nn.Sequential(*children[:layer])
+    new_model = new_model.double()
     new_model.eval()
-    summary(new_model, (3, 480, 854))    
-    #summary(new_model, test_img.shape)
-    #test_img = np.expand_dims(test_img, axis=0)
-    #print(test_img.shape)
 
-    print(test_img.shape)
-    feature_vector = new_model(test_img)
-    print(feature_vector)
+    feature_vector = new_model(img)
+    print('Feature vector shape:', feature_vector.shape)
 
     #Extract vector out of output tensor depending on keypoint location
+    #Compute receptive fields for every feature vector. --> Select feature vector which receptive field center is closest to key point
+    _, _, height_img, width_img = img.numpy().shape
+    _, _, height_fv, width_fv = feature_vector.detach().numpy().shape
 
-    return
+    feature_vectors = []
+    for key_point_position in key_point_positions:
+	    x_kp, y_kp = key_point_position
+	    x_fv, y_fv = round(float(x_kp) * width_fv / width_img), round(float(y_kp) * height_fv / height_img)
+	    #print('X', x_kp, '-->', x_fv, '\nY',  y_kp, '-->', y_fv)
+	    feature_vectors.append(feature_vector[: ,: , y_fv, x_fv])
+
+    return feature_vectors
 
 
 
-key_point_positions = [(5, 10), (15, 25)]
-layer = 'ReLu-20'
+key_point_positions = [(7, 167), (15, 33)]
+layer = 9
 img_path = '/home/max/in2364-adl4cv/DAVIS_2016/DAVIS/JPEGImages/480p/blackswan/00000.jpg'
 model_path = '/home/max/in2364-adl4cv/OSVOS-Pytorch/models/blackswan_epoch-249.pth'
 
