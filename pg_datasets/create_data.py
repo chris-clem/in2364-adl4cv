@@ -33,6 +33,8 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
     device = torch.device("cuda:"+str(gpu_id) if torch.cuda.is_available() else "cpu")
     img = img.to(device)
     
+    with torch.no_grad():
+        feature_vector = new_model(img)
 #    print('Feature vector shape:', feature_vector.shape)
 
     #Extract vector out of output tensor depending on keypoint location
