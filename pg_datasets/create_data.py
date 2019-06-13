@@ -23,7 +23,7 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
     #4th CONV block 17-23 --> Shape: [1, 512, 60, 107] --> Receptive field: 34 * 2 + 6 = 74
     #5th CONV block 24-30 --> Shape: [1, 512, 30, 54] --> Receptive field: 74 * 2 + 6 = 154
 
-    print(key_point_positions.shape)
+    #print(key_point_positions.shape)
     #Load test image and transform it in (C, H, W)
     img = np.moveaxis(imread(img_path), 2, 0).astype(float)
     img = np.expand_dims(img, axis=0)
@@ -35,7 +35,7 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
     
     with torch.no_grad():
         feature_vector = new_model(img)
-#    print('Feature vector shape:', feature_vector.shape)
+    #print('Feature vector shape:', feature_vector.shape)
 
     #Extract vector out of output tensor depending on keypoint location
     #Compute receptive fields for every feature vector. --> Select feature vector which receptive field center is closest to key point
@@ -46,10 +46,10 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
     for key_point_position in key_point_positions:
 	    x_kp, y_kp = key_point_position
 	    x_fv, y_fv = round(float(x_kp) * width_fv / width_img), round(float(y_kp) * height_fv / height_img)
-	    #print('X', x_kp, '-->', x_fv, '\nY',  y_kp, '-->', y_fv)
-	    feature_vectors.append(feature_vector[: ,: , y_fv, x_fv])
+	    feature_vectors.append(feature_vector[: ,: , y_fv, x_fv].cpu().numpy())
 
-    return feature_vectors
+    feature_vectors = np.squeeze(np.array(feature_vectors))
+    return torch.from_numpy(feature_vectors)
 
 
 def get_edge_attribute(contour, edge_index):
