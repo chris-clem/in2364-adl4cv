@@ -79,24 +79,20 @@ def create_data(contour, translation, img_path, new_model, k):
     # TODO 
     # x = get_OSVOS_feature_vectors(contour)
     x = get_OSVOS_feature_vectors(contour, img_path, new_model)
-    print('x.dtype={}'.format(x.dtype))
 
     # edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
     # Each node should be connected to its K nearest neighbours
     positions = torch.from_numpy(contour.astype(np.float64))
     edge_index = knn_graph(positions, k).double()
     edge_index = to_undirected(edge_index)
-    print('edge_index.dtype={}'.format(edge_index.dtype))
 
     # edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
     # The feature of each edge is the distance between the two nodes it connects
     edge_attr = get_edge_attribute(contour, edge_index)
-    print('edge_attr.dtype={}'.format(edge_attr.dtype))
     
     # y: Target to train against (may have arbitrary shape)
     # The target of each node is the displacement of the node between the current and the next frame
     y = torch.from_numpy(translation.astype(np.float64))
-    print('y.dtype={}'.format(y.dtype))
 
     # Create data object
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
