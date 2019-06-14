@@ -178,8 +178,6 @@ class DAVIS2016(Dataset):
                 
                 #if j > 2: break
                     
-                print('#{}: {}'.format(j, frame))
-                
                 # Load corresponding contour
                 contour_path = os.path.join(contours_folder_path, frame)
                 contour = np.load(contour_path)

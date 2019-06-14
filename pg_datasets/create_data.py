@@ -41,11 +41,11 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
     #Compute receptive fields for every feature vector. --> Select feature vector which receptive field center is closest to key point
     _, _, height_img, width_img = img.cpu().numpy().shape
     _, _, height_fv, width_fv = feature_vector.detach().cpu().numpy().shape
-
+    
     feature_vectors = []
     for key_point_position in key_point_positions:
 	    x_kp, y_kp = key_point_position
-	    x_fv, y_fv = round(float(x_kp) * width_fv / width_img), round(float(y_kp) * height_fv / height_img)
+	    x_fv, y_fv = round(float(x_kp) * width_fv / width_img) - 1, round(float(y_kp) * height_fv / height_img) - 1
 	    feature_vectors.append(feature_vector[: ,: , y_fv, x_fv].cpu().numpy())
 
     feature_vectors = np.squeeze(np.array(feature_vectors))
