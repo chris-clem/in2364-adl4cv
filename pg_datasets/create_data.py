@@ -25,7 +25,7 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
 
     #print(key_point_positions.shape)
     #Load test image and transform it in (C, H, W)
-    img = np.moveaxis(imread(img_path), 2, 0).astype(float)
+    img = np.moveaxis(imread(img_path), 2, 0).astype(np.float64)
     img = np.expand_dims(img, axis=0)
     img = torch.from_numpy(img)
     
@@ -56,7 +56,7 @@ def get_edge_attribute(contour, edge_index):
     '''Returns an edge feature matrix of shape [num_edges, num_edge_features]
        containing the distances between the node each edge connects.'''
     
-    edge_index = edge_index.numpy()
+    edge_index = edge_index.numpy().astype(np.int64)
     edge_index = edge_index.T
     
     edge_attr = []
@@ -66,7 +66,7 @@ def get_edge_attribute(contour, edge_index):
         dist = np.linalg.norm(contour_point_0-contour_point_1)
         edge_attr.append([dist])
     
-    edge_atrr = np.array(edge_attr)
+    edge_atrr = np.array(edge_attr).astype(np.float64)
     
     return torch.from_numpy(edge_atrr)
 
@@ -79,20 +79,24 @@ def create_data(contour, translation, img_path, new_model, k):
     # TODO 
     # x = get_OSVOS_feature_vectors(contour)
     x = get_OSVOS_feature_vectors(contour, img_path, new_model)
+    print('x.dtype={}'.format(x.dtype))
 
     # edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
     # Each node should be connected to its K nearest neighbours
-    positions = torch.from_numpy(contour)
-    edge_index = knn_graph(positions, k)
+    positions = torch.from_numpy(contour.astype(np.float64))
+    edge_index = knn_graph(positions, k).double()
     edge_index = to_undirected(edge_index)
+    print('edge_index.dtype={}'.format(edge_index.dtype))
 
     # edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
     # The feature of each edge is the distance between the two nodes it connects
     edge_attr = get_edge_attribute(contour, edge_index)
-
+    print('edge_attr.dtype={}'.format(edge_attr.dtype))
+    
     # y: Target to train against (may have arbitrary shape)
     # The target of each node is the displacement of the node between the current and the next frame
-    y = torch.from_numpy(translation)
+    y = torch.from_numpy(translation.astype(np.float64))
+    print('y.dtype={}'.format(y.dtype))
 
     # Create data object
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
