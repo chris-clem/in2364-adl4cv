@@ -155,13 +155,14 @@ class DAVIS2016(Dataset):
             translations_folder_path = os.path.join(raw_path_translations, sequence)
             
             # Start train_online for this sequence 
-            model_path = '/home/christoph/in2364-adl4cv/OSVOS_PyTorch/models/' + str(sequence) + '_epoch-24.pth'
+            model_path = '/home/maximilian_boemer/in2364-adl4cv/OSVOS_PyTorch/models/' + str(sequence) + '_epoch-500.pth'
             print('Start online training...')
             
             if not os.path.exists(model_path):
+                print('Model not existent --> Training')
                 os.environ['SEQ_NAME'] = str(sequence)
                 # TODO: remove absolute path
-                os.system('python /home/christoph/in2364-adl4cv/OSVOS_PyTorch/train_online.py')
+                os.system('python /home/maximilian_boemer/in2364-adl4cv/OSVOS_PyTorch/train_online.py')
             
             print('Finished online training...')
             

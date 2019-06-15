@@ -2,7 +2,7 @@
 from __future__ import division
 
 import sys
-sys.path.append('/home/christoph/in2364-adl4cv')
+sys.path.append('/home/maximilian_boemer/in2364-adl4cv')
 
 import os
 import socket
@@ -41,7 +41,7 @@ if not os.path.exists(save_dir):
 vis_net = 0  # Visualize the network?
 vis_res = 0  # Visualize the results?
 nAveGrad = 5  # Average the gradient every nAveGrad iterations
-nEpochs = 5 * nAveGrad  # Number of epochs for training #CHANGED
+nEpochs = 100 * nAveGrad  # Number of epochs for training #CHANGED from 2000
 snapshot = nEpochs  # Store a model every snapshot epochs
 parentEpoch = 240
 
