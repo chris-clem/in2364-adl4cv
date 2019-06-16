@@ -11,7 +11,7 @@ from torchvision import transforms
 
 import OSVOS_PyTorch.networks.vgg_osvos as vo
 
-from torchsummary import summary
+#from torchsummary import summary
 import numpy as np
 from scipy.misc import imread, imsave, imresize
 
@@ -59,13 +59,17 @@ def get_OSVOS_feature(key_point_positions, layer, img_path, model_path):
     new_model = nn.Sequential(*children[:layer])
     new_model = new_model.double()
     new_model.eval()
-
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = new_model.to(device)
+    img = img.to(device)
     feature_vector = new_model(img)
     print('Feature vector shape:', feature_vector.shape)
 
+    img, feature_vector = img.cpu(), feature_vector.cpu()
     #Extract vector out of output tensor depending on keypoint location
     #Compute receptive fields for every feature vector. --> Select feature vector which receptive field center is closest to key point
-    _, _, height_img, width_img = img.numpy().shape
+    _, _, height_img, width_img = img.detach().numpy().shape
     _, _, height_fv, width_fv = feature_vector.detach().numpy().shape
 
     feature_vectors = []
