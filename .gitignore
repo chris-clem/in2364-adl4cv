@@ -11,3 +11,5 @@ OSVOS_PyTorch/models
 OSVOS_PyTorch/mypath.py
 OSVOS_PyTorch/networks/__pycache__
 OSVOS_PyTorch/util/__pycache__
+
+visualization/tsne
