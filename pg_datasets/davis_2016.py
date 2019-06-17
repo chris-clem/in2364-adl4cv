@@ -11,11 +11,13 @@ from torch_geometric.utils import to_undirected
 from pg_datasets.create_data import create_data
 import OSVOS_PyTorch.networks.vgg_osvos as vo
 
+import sys
+from OSVOS_PyTorch.train_online import train
 
 class DAVIS2016(Dataset):
     def __init__(self, root, 
                  contours_folders_path, images_folders_path, translations_folders_path, 
-                 layer, k, 
+                 layer, k, epochs_wo_avegrad,
                  skip_sequences, train_sequences, val_sequences,
                  train=True, transform=None, pre_transform=None):
         # Paths    
@@ -26,6 +28,7 @@ class DAVIS2016(Dataset):
         # Hyperparameters
         self.layer = layer
         self.k = k
+        self.epochs_wo_avegrad = epochs_wo_avegrad
         
         # Sequences
         self.skip_sequences = skip_sequences
@@ -155,16 +158,16 @@ class DAVIS2016(Dataset):
             translations_folder_path = os.path.join(raw_path_translations, sequence)
             
             # Start train_online for this sequence 
-            model_path = '/home/maximilian_boemer/in2364-adl4cv/OSVOS_PyTorch/models/' + str(sequence) + '_epoch-500.pth'
-            print('Start online training...')
-            
+            basedirname = os.path.dirname(os.path.dirname(__file__))
+            model_path = os.path.join(basedirname, ('OSVOS_PyTorch/models/' + str(sequence) + '_epoch-' + str(5*self.epochs_wo_avegrad-1) + '.pth'))
+            print(sys.path)
             if not os.path.exists(model_path):
-                print('Model not existent --> Training')
+                print('Start online training...')
                 os.environ['SEQ_NAME'] = str(sequence)
-                # TODO: remove absolute path
-                os.system('python /home/maximilian_boemer/in2364-adl4cv/OSVOS_PyTorch/train_online.py')
-            
-            print('Finished online training...')
+                train(self.epochs_wo_avegrad)
+                print('Finished online training...')
+            else:
+                print('Model available')
             
             # Create OSVOS model for feature vector extraction
             print('Create new OSVOS model...')
