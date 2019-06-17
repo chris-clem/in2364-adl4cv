@@ -25,7 +25,7 @@ def get_OSVOS_feature_vectors(key_point_positions, img_path, new_model):
 
     #print(key_point_positions.shape)
     #Load test image and transform it in (C, H, W)
-    img = np.moveaxis(imread(img_path), 2, 0).astype(float)
+    img = np.moveaxis(imread(img_path), 2, 0).astype(np.float64)
     img = np.expand_dims(img, axis=0)
     img = torch.from_numpy(img)
     
@@ -66,9 +66,10 @@ def get_edge_attribute(contour, edge_index):
         dist = np.linalg.norm(contour_point_0-contour_point_1)
         edge_attr.append([dist])
     
-    edge_atrr = np.array(edge_attr)
+    edge_attr = np.array(edge_attr).astype(np.float64)
+    edge_attr = np.squeeze(edge_attr)
     
-    return torch.from_numpy(edge_atrr)
+    return torch.from_numpy(edge_attr)
 
 
 def create_data(contour, translation, img_path, new_model, k):
@@ -89,10 +90,10 @@ def create_data(contour, translation, img_path, new_model, k):
     # edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
     # The feature of each edge is the distance between the two nodes it connects
     edge_attr = get_edge_attribute(contour, edge_index)
-
+    
     # y: Target to train against (may have arbitrary shape)
     # The target of each node is the displacement of the node between the current and the next frame
-    y = torch.from_numpy(translation)
+    y = torch.from_numpy(translation.astype(np.float64))
 
     # Create data object
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
