@@ -56,7 +56,7 @@ def get_edge_attribute(contour, edge_index):
     '''Returns an edge feature matrix of shape [num_edges, num_edge_features]
        containing the distances between the node each edge connects.'''
     
-    edge_index = edge_index.numpy().astype(np.int64)
+    edge_index = edge_index.numpy()
     edge_index = edge_index.T
     
     edge_attr = []
@@ -66,9 +66,10 @@ def get_edge_attribute(contour, edge_index):
         dist = np.linalg.norm(contour_point_0-contour_point_1)
         edge_attr.append([dist])
     
-    edge_atrr = np.array(edge_attr).astype(np.float64)
+    edge_attr = np.array(edge_attr).astype(np.float64)
+    edge_attr = np.squeeze(edge_attr)
     
-    return torch.from_numpy(edge_atrr)
+    return torch.from_numpy(edge_attr)
 
 
 def create_data(contour, translation, img_path, new_model, k):
@@ -82,8 +83,8 @@ def create_data(contour, translation, img_path, new_model, k):
 
     # edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
     # Each node should be connected to its K nearest neighbours
-    positions = torch.from_numpy(contour.astype(np.float64))
-    edge_index = knn_graph(positions, k).double()
+    positions = torch.from_numpy(contour)
+    edge_index = knn_graph(positions, k)
     edge_index = to_undirected(edge_index)
 
     # edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]

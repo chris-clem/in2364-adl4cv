@@ -56,7 +56,7 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(sequences):
             
-            #if i > 2: break
+            #if i > 1: break
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
@@ -78,7 +78,7 @@ class DAVIS2016(Dataset):
             # Iterate through frames
             for j, frame in enumerate(frames):
                 
-                #if j > 2: break
+                #if j > 1: break
                     
                 processed_file_names.append('{}_{}.pt'.format(sequence, frame[:5]))
         
@@ -136,7 +136,7 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(sequences):
             
-            #if i > 2: break
+            #if i > 1: break
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
@@ -176,7 +176,7 @@ class DAVIS2016(Dataset):
             # Iterate through frames
             for j, frame in enumerate(frames[:-1]):
                 
-                #if j > 2: break
+                #if j > 1: break
                     
                 # Load corresponding contour
                 contour_path = os.path.join(contours_folder_path, frame)
