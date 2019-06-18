@@ -181,7 +181,8 @@ class DAVIS2016(Dataset):
             for j, frame in enumerate(frames[:-1]):
                 
                 #if j > 1: break
-                    
+                
+                                   
                 # Load corresponding contour
                 contour_path = os.path.join(contours_folder_path, frame)
                 contour = np.load(contour_path)
@@ -194,7 +195,13 @@ class DAVIS2016(Dataset):
                 image_path = os.path.join(images_folder_path, frames[j+1][:5] + '.jpg')
                 
                 # Get data and append it to corresponding data_list
+                data_name = '{}_{}.pt'.format(sequence, frame[:5])
                 data = create_data(contour, translation, image_path, new_model, self.k)
+                
+                if (data.x.shape[0] != data.y.shape[0]):
+                    print(data_name)
+                    print(data.x.shape)
+                    print(data.y.shape)
 
                 if self.pre_filter is not None and not self.pre_filter(data):
                     continue
@@ -202,7 +209,7 @@ class DAVIS2016(Dataset):
                 if self.pre_transform is not None:
                     data = self.pre_transform(data)
                 
-                torch.save(data, os.path.join(self.processed_dir, '{}_{}.pt'.format(sequence, frame[:5])))
+                torch.save(data, os.path.join(self.processed_dir, data_name))
 
     def get(self, idx):
         data = torch.load(os.path.join(self.processed_dir, self.processed_file_names[idx]))
