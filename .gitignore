@@ -13,3 +13,4 @@ OSVOS_PyTorch/networks/__pycache__
 OSVOS_PyTorch/util/__pycache__
 
 visualization/tsne
+GCN_Files/runs
