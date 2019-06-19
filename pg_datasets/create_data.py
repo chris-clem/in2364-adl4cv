@@ -68,21 +68,29 @@ def get_edge_attribute(contour, edge_index):
     return torch.from_numpy(edge_attr)
 
 
-def create_data(contour, translation, img_path, new_model, k):
+def create_data(contour, translation, img_path1, img_path2, new_model, k):
     '''Returns data object.'''
     
     contour = torch.from_numpy(contour)
+    img1 = np.moveaxis(imread(img_path1), 2, 0).astype(np.float64)
+    img1 = np.expand_dims(img1, axis=0)
+    img1 = torch.from_numpy(img1)    
     
-    img = np.moveaxis(imread(img_path), 2, 0).astype(np.float64)
-    img = np.expand_dims(img, axis=0)
-    img = torch.from_numpy(img)
+    img2 = np.moveaxis(imread(img_path2), 2, 0).astype(np.float64)
+    img2 = np.expand_dims(img2, axis=0)
+    img2 = torch.from_numpy(img2)
     
     # x: Node feature matrix with shape [num_nodes, num_node_features]
     # The feature of each node is the OSVOS feature vector of the next frame
     # TODO 
     # x = get_OSVOS_feature_vectors(contour)
-    x = get_OSVOS_feature_vectors(contour, img, new_model)
-
+    x_1 = get_OSVOS_feature_vectors(contour, img1, new_model)
+    #print(x_1.shape)
+    x_2 = get_OSVOS_feature_vectors(contour, img2, new_model)
+    #print(x_2.shape)
+    x = torch.cat((x_1, x_2), 1)
+    #print(x.shape)
+    
     # edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
     # Each node should be connected to its K nearest neighbours
     edge_index = knn_graph(contour, k)
@@ -97,6 +105,6 @@ def create_data(contour, translation, img_path, new_model, k):
     y = torch.from_numpy(translation.astype(np.float64))
 
     # Create data object
-    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, img=img, contour=contour)
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, img=img2, contour=contour)
     
     return data
