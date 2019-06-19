@@ -53,7 +53,9 @@ class DAVIS2016(Dataset):
         raw_path_translations = self.raw_paths[2]
         
         # Get list of sequences
-        sequences = os.listdir(raw_path_translations)
+        sequences = []
+        sequences.extend(self.train_sequences)
+        sequences.extend(self.val_sequences)
         sequences.sort()
         
         # Iterate through sequences 
@@ -133,7 +135,9 @@ class DAVIS2016(Dataset):
         raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
         # Get list of sequences
-        sequences = os.listdir(raw_path_contours)
+        sequences = []
+        sequences.extend(self.train_sequences)
+        sequences.extend(self.val_sequences)
         sequences.sort()
         
         # Iterate through sequences 
@@ -191,12 +195,13 @@ class DAVIS2016(Dataset):
                 translation_path = os.path.join(translations_folder_path, frame)
                 translation = np.load(translation_path)
                 
-                # Get image path
-                image_path = os.path.join(images_folder_path, frames[j+1][:5] + '.jpg')
+                # Get image path of current frame and following
+                image_path1 = os.path.join(images_folder_path, frames[j][:5] + '.jpg')
+                image_path2 = os.path.join(images_folder_path, frames[j+1][:5] + '.jpg')
                 
                 # Get data and append it to corresponding data_list
                 data_name = '{}_{}.pt'.format(sequence, frame[:5])
-                data = create_data(contour, translation, image_path, new_model, self.k)
+                data = create_data(contour, translation, image_path1, image_path2, new_model, self.k)
                 
                 if (data.x.shape[0] != data.y.shape[0]):
                     print(data_name)
