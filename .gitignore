@@ -4,6 +4,12 @@ pg_datasets/DAVIS_2016/*
 pg_datasets/__pycache__
 pg_datasets/.ipynb_checkpoints
 
+pg_models/__pycache__
+pg_models/runs
+pg_networks/__pycache__    
+pg_solvers/__pycache__
+pg_utils/__pycache__ 
+
 OSVOS_PyTorch/__pycache__
 OSVOS_PyTorch/dataloaders/__pycache__
 OSVOS_PyTorch/layers/__pycache__
@@ -13,4 +19,3 @@ OSVOS_PyTorch/networks/__pycache__
 OSVOS_PyTorch/util/__pycache__
 
 visualization/tsne
-GCN_Files/
