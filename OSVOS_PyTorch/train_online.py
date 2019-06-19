@@ -119,12 +119,10 @@ def train(epochs_wo_avegrad):
     start_time = timeit.default_timer()
     # Main Training and Testing Loop
     for epoch in range(0, nEpochs):
-        print('epoch:', epoch, '/', nEpochs)
         # One training epoch
         running_loss_tr = 0
         np.random.seed(seed + epoch)
         for ii, sample_batched in enumerate(trainloader):
-            print('sample', ii, '/', len(trainloader))
             inputs, gts = sample_batched['image'], sample_batched['gt']
 
             # Forward-Backward of the mini-batch
