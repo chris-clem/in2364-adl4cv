@@ -15,17 +15,10 @@ def show_img_with_contour(data):
     
 def plot_translation(image, translation_ground_truth, translation_pred):
     
-    fig, ax = plt.subplots(figsize=(15, 10))
+    plt.imshow(image)    
     
-    ax.scatter(translation_ground_truth[:, 0], translation_ground_truth[:, 1], color='g')
-    ax.scatter(translation_pred[:, 0], translation_pred[:, 1], color='r')
-    
-    # Plot image
-    ax.imshow(image)
-    
-    ax.axis('image')
-    ax.set_xticks([])
-    ax.set_yticks([])
+    plt.scatter(translation_ground_truth[:, 0], translation_ground_truth[:, 1], color='g')
+    plt.scatter(translation_pred[:, 0], translation_pred[:, 1], color='r')
 
     plt.show()
     
