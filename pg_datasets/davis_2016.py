@@ -174,15 +174,17 @@ class DAVIS2016(Dataset):
             # Iterate through frames
             for j, frame in enumerate(frames[:-1]):
                 
+                file = os.path.splitext(frame)[0] + '.npy'
+                
                 #if j > 1: break
                                                    
                 # Load corresponding contour
-                contour_path = os.path.join(contours_folder_path, frame)
+                contour_path = os.path.join(contours_folder_path, file)
                 contour = np.load(contour_path)
                 contour = np.squeeze(contour)
                 
                 # Load corresponding sequence
-                translation_path = os.path.join(translations_folder_path, frame)
+                translation_path = os.path.join(translations_folder_path, file)
                 translation = np.load(translation_path)
                 
                 # Get image path of current frame and following
