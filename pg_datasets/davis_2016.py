@@ -34,6 +34,8 @@ class DAVIS2016(Dataset):
         self.skip_sequences = skip_sequences
         self.train_sequences = train_sequences
         self.val_sequences = val_sequences
+        self.sequences = self.train_sequences + self.val_sequences
+        self.sequences.sort()
         
         self.train = train
         
@@ -52,14 +54,8 @@ class DAVIS2016(Dataset):
         # Get path to Translations
         raw_path_translations = self.raw_paths[2]
         
-        # Get list of sequences
-        sequences = []
-        sequences.extend(self.train_sequences)
-        sequences.extend(self.val_sequences)
-        sequences.sort()
-        
         # Iterate through sequences 
-        for i, sequence in enumerate(sequences):
+        for i, sequence in enumerate(self.sequences):
             
             #if i > 1: break
             
@@ -81,7 +77,7 @@ class DAVIS2016(Dataset):
             frames.sort()
             
             # Iterate through frames
-            for j, frame in enumerate(frames):
+            for j, frame in enumerate(frames[:-1]):
                 
                 #if j > 1: break
                     
@@ -134,14 +130,8 @@ class DAVIS2016(Dataset):
         # Get paths to Contours, Images, and Translations
         raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
-        # Get list of sequences
-        sequences = []
-        sequences.extend(self.train_sequences)
-        sequences.extend(self.val_sequences)
-        sequences.sort()
-        
         # Iterate through sequences 
-        for i, sequence in enumerate(sequences):
+        for i, sequence in enumerate(self.sequences):
             
             #if i > 1: break
             
@@ -178,18 +168,18 @@ class DAVIS2016(Dataset):
             new_model = self._create_osvos_model(model_path, self.layer)
             
             # Get list of translations (one for each frame in the sequence)
-            frames = os.listdir(contours_folder_path)
+            frames = os.listdir(translations_folder_path)
             frames.sort()
             
             # Iterate through frames
             for j, frame in enumerate(frames[:-1]):
                 
                 #if j > 1: break
-                
-                                   
+                                                   
                 # Load corresponding contour
                 contour_path = os.path.join(contours_folder_path, frame)
                 contour = np.load(contour_path)
+                contour = np.squeeze(contour)
                 
                 # Load corresponding sequence
                 translation_path = os.path.join(translations_folder_path, frame)
