@@ -109,9 +109,6 @@ def train(epochs_wo_avegrad):
     db_test = db.DAVIS2016(train=False, db_root_dir=db_root_dir, transform=tr.ToTensor(), seq_name=seq_name)
     testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
 
-
-    num_img_tr = len(trainloader)
-    num_img_ts = len(testloader)
     loss_tr = []
     aveGrad = 0
 
