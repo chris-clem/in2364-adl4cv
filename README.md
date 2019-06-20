@@ -3,8 +3,7 @@
 
 ## Repository Structure
 - **download_DAVIS_2016.sh**: Downloads DAVIS 2016 dataset and saves it to **DAVIS_2016**
-- **create_contours.ipynb**: Saves contour points of DAVIS 2016 annotations as numpy arrays
-- **create_translations.ipynb**: Saves translations between points of two consecutive contours as numpy arrarys
+- **create_contours_and_translations.ipynb**: Contour points and translation for each contour point are computed using Optical Flow
 - **gcn_davis_2016.ipynb**: Creates a custom PyTorch Geometric InMemoryDataset for the DAVIS 2016 dataset and trains a simple GCN.
 - **DAVIS_2016**: Folder in which DAVIS 2016 dataset is stored
 - **Experiments**: Folder in which PyTorch Geometric tutorials are stored
