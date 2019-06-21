@@ -60,7 +60,7 @@ class Solver(object):
         model.train()
         
         # Logging into Tensorboard
-        log_dir = os.path.join('../pg_models', 'runs', datetime.now().strftime('%b%d_%H-%M-%S'))
+        log_dir = os.path.join('pg_models', 'runs', datetime.now().strftime('%b%d_%H-%M-%S'))
         writer = SummaryWriter(logdir=log_dir, comment='train')
 
         if verbose: print('START TRAIN.')
