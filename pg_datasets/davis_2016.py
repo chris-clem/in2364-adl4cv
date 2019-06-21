@@ -154,7 +154,6 @@ class DAVIS2016(Dataset):
             # Start train_online for this sequence 
             basedirname = os.path.dirname(os.path.dirname(__file__))
             model_path = os.path.join(basedirname, ('OSVOS_PyTorch/models/' + str(sequence) + '_epoch-' + str(5*self.epochs_wo_avegrad-1) + '.pth'))
-            print(sys.path)
             if not os.path.exists(model_path):
                 print('Start online training...')
                 os.environ['SEQ_NAME'] = str(sequence)
@@ -191,8 +190,12 @@ class DAVIS2016(Dataset):
                 image_path1 = os.path.join(images_folder_path, frames[j][:5] + '.jpg')
                 image_path2 = os.path.join(images_folder_path, frames[j+1][:5] + '.jpg')
                 
-                # Get data and append it to corresponding data_list
+                # Get data
                 data_name = '{}_{}.pt'.format(sequence, frame[:5])
+                data_path = os.path.join(self.processed_dir, data_name)
+                if os.path.exists(data_path):
+                    continue
+                    
                 data = create_data(contour, translation, image_path1, image_path2, new_model, self.k)
                 
                 if (data.x.shape[0] != data.y.shape[0]):
@@ -206,7 +209,7 @@ class DAVIS2016(Dataset):
                 if self.pre_transform is not None:
                     data = self.pre_transform(data)
                 
-                torch.save(data, os.path.join(self.processed_dir, data_name))
+                torch.save(data, data_path)
 
     def get(self, idx):
         data = torch.load(os.path.join(self.processed_dir, self.processed_file_names[idx]))
