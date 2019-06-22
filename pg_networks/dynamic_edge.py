@@ -3,6 +3,7 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU, BatchNorm1d as BN
 
+from torch_cluster import knn_graph
 from torch_geometric.nn import EdgeConv
 
 
@@ -35,7 +36,8 @@ class DynamicEdgeConv(EdgeConv):
     def __init__(self, nn, k, aggr='max', **kwargs):
         super(DynamicEdgeConv, self).__init__(nn=nn, aggr=aggr, **kwargs)
         self.k = k
-
+        self.flow = 'source_to_target'
+        
     def forward(self, x, batch=None):
         """"""
         edge_index = knn_graph(x, self.k, batch, loop=False, flow=self.flow)
@@ -57,7 +59,7 @@ class DynamicEdge(torch.nn.Module):
         self.lin2 = Linear(in_channels, out_channels)
 
     def forward(self, data):
-        x
+        x = data.x
         
         x = self.conv1(x)
         x = self.conv2(x)
