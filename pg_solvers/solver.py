@@ -8,14 +8,33 @@ import torch
 from torch.optim import Adam
 from torch.nn import MSELoss, L1Loss
 from torch.autograd import Variable
+import cv2
+
+
+def iou_numpy(outputs: np.array, labels: np.array):
+    
+    #intersection = (outputs & labels).sum((1, 2))
+    #union = (outputs | labels).sum((1, 2))
+    #thresholded = np.ceil(np.clip(20 * (iou - 0.5), 0, 10)) / 10 
+    #print(outputs.shape, labels.shape)
+    for i in range(16):
+        #print(np.sum(outputs[i]), np.sum(labels[i]))
+        intersection = np.sum(np.where(np.logical_and(outputs[i]==1, labels[i]==1), 1, 0))
+        union = np.sum(np.where(np.logical_or(outputs[i]==1, labels[i]==1), 1, 0))
+        iou = intersection / (union+1e-8)
+        #print('\t', iou)
+        
+        
+    intersection = np.sum(np.where(np.logical_and(outputs==1, labels==1), 1, 0))
+    union = np.sum(np.where(np.logical_or(outputs==1, labels==1), 1, 0))
+
+    iou = (intersection) / (union+1e-8)
+    
+    return iou
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    
-
-def IOU_of_resulting_shapes():
-    pass
 
 class Solver(object):
     default_adam_args = {"lr": 1e-4,
@@ -80,7 +99,7 @@ class Solver(object):
             running_loss = 0.0
             for i, data in enumerate(train_loader, 0):
                 data = data.to(device)
-
+                
                 # zero the parameter gradients
                 optimizer.zero_grad()
 
@@ -110,6 +129,10 @@ class Solver(object):
                 magnitude_loss_L2, angle_loss_L2 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = False)
                 magnitude_loss_L1_rounded, angle_loss_L1_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = True)
                 magnitude_loss_L2_rounded, angle_loss_L2_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = True)
+                #Compute IOU metric
+                contour = data.contour.double()
+                self._IOU_of_resulting_shapes(contour=contour, translation_pred=out, translation_gt=data.y, img_shape=data.img.shape)
+                
                 
                 self.loss['magnitude_loss_L1'].append(magnitude_loss_L1)
                 self.loss['angle_loss_L1'].append(angle_loss_L1)
@@ -177,6 +200,26 @@ class Solver(object):
         alpha_loss = loss(alpha_predicted, alpha_gt) * 180 / np.pi
 
         return magnitude_loss, alpha_loss
+
+    def _IOU_of_resulting_shapes(self, contour, translation_pred, translation_gt, img_shape):
+        #print(translation_pred.shape, translation_gt.shape)
+        contour_pred = contour + translation_pred
+        contour_gt = contour + translation_gt
+        
+        contour_img = np.zeros((img_shape[0], img_shape[2], img_shape[3])).astype(np.uint8)
+        contour_pred = np.expand_dims(contour_pred.cpu().detach().numpy().astype(np.int32), axis=0)
+        contour_img_pred = cv2.fillPoly(contour_img, contour_pred, color=1)
+        
+        
+        contour_gt = np.expand_dims(contour_gt.cpu().detach().numpy().astype(np.int32), axis=0)
+        contour_img_gt = cv2.fillPoly(contour_img, contour_gt, color=1)
+
+        iou = iou_numpy(contour_img_pred, contour_img_gt)
+        #print(iou)
+        
+        return iou
+        
+        
     
     def _val(self, model, val_loader, loss_func, verbose=False):
         
