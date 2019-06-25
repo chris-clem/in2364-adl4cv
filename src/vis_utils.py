@@ -50,7 +50,7 @@ def plot_translations(img, contour, translation_gt, translation_pred):
 def plot_loss(solver):
     
     plt.figure(figsize=(10,7))
-    plt.plot(solver.train_loss_epoch_history, '-', label='train loss')
+    plt.plot(solver.loss_epoch_history['translation_loss_L2'], '-', label='train loss')
     plt.plot(solver.val_loss_history, '-', label='val loss')
     plt.xlabel('epochs')
     plt.ylabel('loss')

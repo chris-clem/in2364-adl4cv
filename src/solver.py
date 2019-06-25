@@ -93,14 +93,10 @@ class Solver(object):
 
         if verbose: print('START TRAIN.')
         start_time = timeit.default_timer()
-        print(start_time)
         
         for epoch in range(num_epochs):
             running_loss = 0.0
             for i, data in enumerate(train_loader):
-                
-                print('batch: {}, data.: {}, device: {}'.format(
-                       i + 1, data, device))
                 
                 data = data.to(device)
                 
@@ -110,8 +106,6 @@ class Solver(object):
                 # forward pass to get outputs
                 out = model(data)
 
-                print('out.shape: {}'.format(out.shape))
-                
                 # calculate the loss between predicted and target keypoints
                 out_flatten = out.flatten()
                 y_flatten = data.y.flatten()
@@ -131,23 +125,23 @@ class Solver(object):
                 running_loss += self.loss['translation_loss_L2'][-1].item()
                 
                 #Compute magnitude angle metrics
-                magnitude_loss_L1, angle_loss_L1 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = False)
-                magnitude_loss_L2, angle_loss_L2 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = False)
-                magnitude_loss_L1_rounded, angle_loss_L1_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = True)
-                magnitude_loss_L2_rounded, angle_loss_L2_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = True)
+                #magnitude_loss_L1, angle_loss_L1 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = False)
+                #magnitude_loss_L2, angle_loss_L2 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = False)
+                #magnitude_loss_L1_rounded, angle_loss_L1_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = True)
+                #magnitude_loss_L2_rounded, angle_loss_L2_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = True)
                 #Compute IOU metric
-                contour = data.contour.double()
-                self._IOU_of_resulting_shapes(contour=contour, translation_pred=out, translation_gt=data.y, img_shape=data.img.shape)
+                #contour = data.contour.double()
+                #self._IOU_of_resulting_shapes(contour=contour, translation_pred=out, translation_gt=data.y, img_shape=data.img.shape)
                 
                 
-                self.loss['magnitude_loss_L1'].append(magnitude_loss_L1)
-                self.loss['angle_loss_L1'].append(angle_loss_L1)
-                self.loss['magnitude_loss_L2'].append(magnitude_loss_L2)
-                self.loss['angle_loss_L2'].append(angle_loss_L2)
-                self.loss['magnitude_loss_L1_rounded'].append(magnitude_loss_L1_rounded)
-                self.loss['angle_loss_L1_rounded'].append(angle_loss_L1_rounded)
-                self.loss['magnitude_loss_L2_rounded'].append(magnitude_loss_L2_rounded)
-                self.loss['angle_loss_L2_rounded'].append(angle_loss_L2_rounded)
+                #self.loss['magnitude_loss_L1'].append(magnitude_loss_L1)
+                #self.loss['angle_loss_L1'].append(angle_loss_L1)
+                #self.loss['magnitude_loss_L2'].append(magnitude_loss_L2)
+                #self.loss['angle_loss_L2'].append(angle_loss_L2)
+                #self.loss['magnitude_loss_L1_rounded'].append(magnitude_loss_L1_rounded)
+                #self.loss['angle_loss_L1_rounded'].append(angle_loss_L1_rounded)
+                #self.loss['magnitude_loss_L2_rounded'].append(magnitude_loss_L2_rounded)
+                #self.loss['angle_loss_L2_rounded'].append(angle_loss_L2_rounded)
                 
                 if i % log_nth == log_nth - 1:
                     if verbose:
