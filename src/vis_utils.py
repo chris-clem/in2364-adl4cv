@@ -1,3 +1,4 @@
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -54,4 +55,51 @@ def plot_loss(solver):
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.legend()
+    plt.show()
+    
+    
+def create_contour_osvos_combo_img(contour_pred, osvos_img):
+    '''Create combo image from predicted contour and osvos prediction.'''
+    
+    contour_pred = np.expand_dims(contour_pred.detach().numpy().astype(np.int32), axis=0)
+    contour_img = np.zeros_like(osvos_img, dtype=np.uint8)
+    contour_img = cv2.fillPoly(contour_img, contour_pred, color=(255, 255, 255))
+    contour_img = cv2.cvtColor(contour_img.astype(np.float32), cv2.COLOR_RGB2GRAY)
+    
+    osvos_img = cv2.cvtColor(osvos_img.astype(np.float32), cv2.COLOR_RGB2GRAY)
+    osvos_img = np.where(osvos_img >= 255/2, 255, 0)
+
+    combo_img = np.where(np.logical_and(osvos_img==255, contour_img==255), 1, 0)
+    deletions_contour_img = np.where(np.logical_and(osvos_img!=255, contour_img==255), 1, 0)
+    deletions_osvos_img = np.where(np.logical_and(osvos_img==255, contour_img!=255), 1, 0)
+    
+    return contour_img, combo_img, deletions_contour_img, deletions_osvos_img
+
+
+def plot_combo_img(contour_pred, osvos_img):
+    (contour_img, combo_img, 
+     deletions_contour_img, deletions_osvos_img) = create_contour_osvos_combo_img(contour_pred, osvos_img)
+    
+    fig = plt.figure(figsize=(10,25))
+
+    ax = plt.subplot(511)
+    ax.set_title('Contour Image')
+    ax.imshow(contour_img, cmap='gray')
+    
+    ax = plt.subplot(512)
+    ax.set_title('OSVOS Image')
+    ax.imshow(osvos_img, cmap='gray')
+
+    ax = plt.subplot(513)
+    ax.set_title('Combined Image')
+    ax.imshow(combo_img, cmap='gray')
+
+    ax = plt.subplot(514)
+    ax.set_title('Deletions Contour Image')
+    ax.imshow(deletions_contour_img, cmap='gray')
+
+    ax = plt.subplot(515)
+    ax.set_title('Deletions OSVOS Image')
+    ax.imshow(deletions_osvos_img, cmap='gray')
+    
     plt.show()
