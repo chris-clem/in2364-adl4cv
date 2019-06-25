@@ -58,7 +58,7 @@ def plot_loss(solver):
     plt.show()
     
     
-def create_contour_osvos_combo_img(contour_pred, osvos_img):
+def compute_combo_img(contour_pred, osvos_img):
     '''Create combo image from predicted contour and osvos prediction.'''
     
     contour_pred = np.expand_dims(contour_pred.detach().numpy().astype(np.int32), axis=0)
@@ -78,7 +78,7 @@ def create_contour_osvos_combo_img(contour_pred, osvos_img):
 
 def plot_combo_img(contour_pred, osvos_img):
     (contour_img, combo_img, 
-     deletions_contour_img, deletions_osvos_img) = create_contour_osvos_combo_img(contour_pred, osvos_img)
+     deletions_contour_img, deletions_osvos_img) = compute_combo_img(contour_pred, osvos_img)
     
     fig = plt.figure(figsize=(10,25))
 

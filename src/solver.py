@@ -93,10 +93,15 @@ class Solver(object):
 
         if verbose: print('START TRAIN.')
         start_time = timeit.default_timer()
+        print(start_time)
         
         for epoch in range(num_epochs):
             running_loss = 0.0
-            for i, data in enumerate(train_loader, 0):
+            for i, data in enumerate(train_loader):
+                
+                print('batch: {}, data.: {}, device: {}'.format(
+                       i + 1, data, device))
+                
                 data = data.to(device)
                 
                 # zero the parameter gradients
@@ -104,6 +109,8 @@ class Solver(object):
 
                 # forward pass to get outputs
                 out = model(data)
+
+                print('out.shape: {}'.format(out.shape))
                 
                 # calculate the loss between predicted and target keypoints
                 out_flatten = out.flatten()
@@ -162,20 +169,20 @@ class Solver(object):
             self.val_loss_history.append(val_loss)
             
             if verbose:
-                print('[Epoch %d/%d] trainloss: %.5f - val_loss: %.5f'
+                print('[Epoch %d/%d] train_loss: %.5f - val_loss: %.5f'
                       %(epoch + 1, num_epochs, self.loss_epoch_history['translation_loss_L2'][-1], val_loss))
-                print('\tL1 Loss: translation:', self.loss_epoch_history['translation_loss_L1'][-1],
-                              'rounded:', self.loss_epoch_history['translation_loss_L1_rounded'][-1])
-                print('\tL2 Loss: translation:', self.loss_epoch_history['translation_loss_L2'][-1],
-                              'rounded:', self.loss_epoch_history['translation_loss_L2_rounded'][-1])
-                print('\tL1 Loss:   Magnitude:', self.loss_epoch_history['magnitude_loss_L1'][-1],
-                                  'Angle:', self.loss_epoch_history['angle_loss_L1'][-1])
-                print('\t  -> rounded: Magnitude:', self.loss_epoch_history['magnitude_loss_L1_rounded'][-1],
-                                  'Angle:', self.loss_epoch_history['angle_loss_L1_rounded'][-1])
-                print('\tL2 Loss:   Magnitude:', self.loss_epoch_history['magnitude_loss_L2'][-1],
-                                  'Angle:', self.loss_epoch_history['angle_loss_L2'][-1])
-                print('\t  -> rounded: Magnitude:', self.loss_epoch_history['magnitude_loss_L2_rounded'][-1],
-                                  'Angle:', self.loss_epoch_history['angle_loss_L2_rounded'][-1])
+                #print('\tL1 Loss: translation:', self.loss_epoch_history['translation_loss_L1'][-1],
+                #              'rounded:', self.loss_epoch_history['translation_loss_L1_rounded'][-1])
+                #print('\tL2 Loss: translation:', self.loss_epoch_history['translation_loss_L2'][-1],
+                #              'rounded:', self.loss_epoch_history['translation_loss_L2_rounded'][-1])
+                #print('\tL1 Loss:   Magnitude:', self.loss_epoch_history['magnitude_loss_L1'][-1],
+                #                  'Angle:', self.loss_epoch_history['angle_loss_L1'][-1])
+                #print('\t  -> rounded: Magnitude:', self.loss_epoch_history['magnitude_loss_L1_rounded'][-1],
+                #                  'Angle:', self.loss_epoch_history['angle_loss_L1_rounded'][-1])
+                #print('\tL2 Loss:   Magnitude:', self.loss_epoch_history['magnitude_loss_L2'][-1],
+                #                  'Angle:', self.loss_epoch_history['angle_loss_L2'][-1])
+                #print('\t  -> rounded: Magnitude:', self.loss_epoch_history['magnitude_loss_L2_rounded'][-1],
+                #                  'Angle:', self.loss_epoch_history['angle_loss_L2_rounded'][-1])
 
         if verbose: print('FINISH.')
     
@@ -225,6 +232,7 @@ class Solver(object):
         model.eval()
         running_loss = 0.0
         for i, data in enumerate(val_loader):
+            
             data = data.to(device)
 
             # forward pass to get outputs

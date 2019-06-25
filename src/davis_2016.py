@@ -51,8 +51,8 @@ class DAVIS2016(Dataset):
         
         processed_file_names = []
         
-        # Get path to Translations
-        raw_path_translations = self.raw_paths[2]
+        # Get path to Images
+        raw_path_images = self.raw_paths[1]
         
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
@@ -69,17 +69,21 @@ class DAVIS2016(Dataset):
                 if (sequence in self.train_sequences): continue
                 
                 
-            # Get path to Translations folder
-            translations_folder_path = os.path.join(raw_path_translations, sequence)
+            # Get path to Images folder
+            images_folder_path = os.path.join(raw_path_images, sequence)
             
             # Get list of frames
-            frames = os.listdir(translations_folder_path)
+            frames = os.listdir(images_folder_path)
+            if '.ipynb_checkpoints' in frames:
+                frames.remove('.ipynb_checkpoints')
             frames.sort()
             
             # Iterate through frames
             for j, frame in enumerate(frames[:-1]):
                 
                 #if j > 1: break
+                if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
+                if (sequence == 'surf' and frame == '00053.jpg'): break
                     
                 processed_file_names.append('{}_{}.pt'.format(sequence, frame[:5]))
         
@@ -166,8 +170,10 @@ class DAVIS2016(Dataset):
             print('Create new OSVOS model...')
             new_model = self._create_osvos_model(model_path, self.layer)
             
-            # Get list of translations (one for each frame in the sequence)
-            frames = os.listdir(translations_folder_path)
+            # Get list of Images (one for each frame in the sequence)
+            frames = os.listdir(images_folder_path)
+            if '.ipynb_checkpoints' in frames:
+                frames.remove('.ipynb_checkpoints')
             frames.sort()
             
             # Iterate through frames
@@ -176,6 +182,8 @@ class DAVIS2016(Dataset):
                 file = os.path.splitext(frame)[0] + '.npy'
                 
                 #if j > 1: break
+                if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
+                if (sequence == 'surf' and frame == '00053.jpg'): break
                                                    
                 # Load corresponding contour
                 contour_path = os.path.join(contours_folder_path, file)
@@ -212,5 +220,7 @@ class DAVIS2016(Dataset):
                 torch.save(data, data_path)
 
     def get(self, idx):
-        data = torch.load(os.path.join(self.processed_dir, self.processed_file_names[idx]))
+        file_name = self.processed_file_names[idx]
+        data_path = os.path.join(self.processed_dir, file_name)
+        data = torch.load(data_path)
         return data
