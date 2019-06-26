@@ -92,8 +92,8 @@ class DAVIS2016(Dataset):
                     if k > 2: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     
-                    if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
-                    if (sequence == 'surf' and frame == '00053.jpg'): break
+                    if (sequence == 'bmx-bumps' and frame == '00059.png'): break
+                    if (sequence == 'surf' and frame == '00053.png'): break
 
                     processed_file_names.append('{}_{}_{}.pt'.format(sequence, j, frame[:5]))
         
