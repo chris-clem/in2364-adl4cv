@@ -89,7 +89,7 @@ class DAVIS2016(Dataset):
                 # Iterate through frames
                 for k, frame in enumerate(frames[:-1]):
 
-                    if k > 2: break
+                    #if k > 2: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     
                     if (sequence == 'bmx-bumps' and frame == '00059.png'): break
@@ -147,8 +147,7 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
-            if i > 2: break
-            #print('#{}: {}'.format(i, sequence))
+            # if i > 2: break
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
