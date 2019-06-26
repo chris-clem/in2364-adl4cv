@@ -5,6 +5,7 @@ DAVIS/
 evaluations/*
 
 pg_datasets/DAVIS_2016/*
+pg_datasets/DAVIS_2016_before_augmentation/*
 pg_datasets/__pycache__
 pg_datasets/.ipynb_checkpoints
 

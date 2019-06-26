@@ -17,7 +17,7 @@ from OSVOS_PyTorch.train_online import train
 class DAVIS2016(Dataset):
     def __init__(self, root, 
                  contours_folders_path, images_folders_path, translations_folders_path, 
-                 layer, k, epochs_wo_avegrad,
+                 layer, k, epochs_wo_avegrad, augmentation_count,
                  skip_sequences, train_sequences, val_sequences,
                  train=True, transform=None, pre_transform=None):
         # Paths    
@@ -29,6 +29,7 @@ class DAVIS2016(Dataset):
         self.layer = layer
         self.k = k
         self.epochs_wo_avegrad = epochs_wo_avegrad
+        self.augmentation_count = augmentation_count
         
         # Sequences
         self.skip_sequences = skip_sequences
@@ -57,7 +58,8 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
-            #if i > 1: break
+            #if i > 2: break
+            #print('#{}: {}'.format(i, sequence))
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
@@ -67,25 +69,33 @@ class DAVIS2016(Dataset):
                 if (sequence in self.val_sequences): continue
             else:
                 if (sequence in self.train_sequences): continue
-                
-                
-            # Get path to Images folder
-            images_folder_path = os.path.join(raw_path_images, sequence)
-            
-            # Get list of frames
-            frames = os.listdir(images_folder_path)
-            if '.ipynb_checkpoints' in frames:
-                frames.remove('.ipynb_checkpoints')
-            frames.sort()
-            
-            # Iterate through frames
-            for j, frame in enumerate(frames[:-1]):
-                
-                #if j > 1: break
-                if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
-                if (sequence == 'surf' and frame == '00053.jpg'): break
                     
-                processed_file_names.append('{}_{}.pt'.format(sequence, frame[:5]))
+            # Iterate through augmentations:
+            for j in range(self.augmentation_count):
+
+                j = str(j)
+
+                #print('\t{} #{}'.format('Augmentation', j))            
+                
+                # Get path to Images folder
+                images_folder_path = os.path.join(raw_path_images, sequence, j)
+
+                # Get list of frames
+                frames = os.listdir(images_folder_path)
+                if '.ipynb_checkpoints' in frames:
+                    frames.remove('.ipynb_checkpoints')
+                frames.sort()
+
+                # Iterate through frames
+                for k, frame in enumerate(frames[:-1]):
+
+                    if k > 2: break
+                    #print('\t\t#{}: {}'.format(k, frame))
+                    
+                    if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
+                    if (sequence == 'surf' and frame == '00053.jpg'): break
+
+                    processed_file_names.append('{}_{}_{}.pt'.format(sequence, j, frame[:5]))
         
         return processed_file_names
     
@@ -137,7 +147,8 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
-            #if i > 1: break
+            if i > 2: break
+            #print('#{}: {}'.format(i, sequence))
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
@@ -149,11 +160,6 @@ class DAVIS2016(Dataset):
                 if (sequence in self.train_sequences): continue
             
             print('#{}: {}'.format(i, sequence))
-            
-            # Get paths to current sequence in Contours and Translations folders
-            contours_folder_path = os.path.join(raw_path_contours, sequence)
-            images_folder_path = os.path.join(raw_path_images, sequence)
-            translations_folder_path = os.path.join(raw_path_translations, sequence)
             
             # Start train_online for this sequence 
             basedirname = os.path.dirname(os.path.dirname(__file__))
@@ -170,54 +176,68 @@ class DAVIS2016(Dataset):
             print('Create new OSVOS model...')
             new_model = self._create_osvos_model(model_path, self.layer)
             
-            # Get list of Images (one for each frame in the sequence)
-            frames = os.listdir(images_folder_path)
-            if '.ipynb_checkpoints' in frames:
-                frames.remove('.ipynb_checkpoints')
-            frames.sort()
+            # Iterate through augmentations:
+            for j in range(self.augmentation_count):
+
+                j = str(j)
+
+                #print('\t{} #{}'.format('Augmentation', j))   
             
-            # Iterate through frames
-            for j, frame in enumerate(frames[:-1]):
-                
-                file = os.path.splitext(frame)[0] + '.npy'
-                
-                #if j > 1: break
-                if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
-                if (sequence == 'surf' and frame == '00053.jpg'): break
-                                                   
-                # Load corresponding contour
-                contour_path = os.path.join(contours_folder_path, file)
-                contour = np.load(contour_path)
-                contour = np.squeeze(contour)
-                
-                # Load corresponding sequence
-                translation_path = os.path.join(translations_folder_path, file)
-                translation = np.load(translation_path)
-                
-                # Get image path of current frame and following
-                image_path1 = os.path.join(images_folder_path, frames[j][:5] + '.jpg')
-                image_path2 = os.path.join(images_folder_path, frames[j+1][:5] + '.jpg')
-                
-                # Get data
-                data_name = '{}_{}.pt'.format(sequence, frame[:5])
-                data_path = os.path.join(self.processed_dir, data_name)
-                if os.path.exists(data_path):
-                    continue
+                # Get paths to current sequence in Contours and Translations folders
+                contours_folder_path = os.path.join(raw_path_contours, sequence, j)
+                images_folder_path = os.path.join(raw_path_images, sequence, j)
+                translations_folder_path = os.path.join(raw_path_translations, sequence, j)
+
+                # Get list of Images (one for each frame in the sequence)
+                frames = os.listdir(images_folder_path)
+                if '.ipynb_checkpoints' in frames:
+                    frames.remove('.ipynb_checkpoints')
+                frames.sort()
+
+                # Iterate through frames
+                for k, frame in enumerate(frames[:-1]):
+
+                    file = os.path.splitext(frame)[0] + '.npy'
+
+                    #if k > 2: break
+                    #print('\t\t#{}: {}'.format(k, frame))
                     
-                data = create_data(contour, translation, image_path1, image_path2, new_model, self.k)
-                
-                if (data.x.shape[0] != data.y.shape[0]):
-                    print(data_name)
-                    print(data.x.shape)
-                    print(data.y.shape)
+                    if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
+                    if (sequence == 'surf' and frame == '00053.jpg'): break
 
-                if self.pre_filter is not None and not self.pre_filter(data):
-                    continue
+                    # Load corresponding contour
+                    contour_path = os.path.join(contours_folder_path, file)
+                    contour = np.load(contour_path)
+                    contour = np.squeeze(contour)
 
-                if self.pre_transform is not None:
-                    data = self.pre_transform(data)
-                
-                torch.save(data, data_path)
+                    # Load corresponding translation
+                    translation_path = os.path.join(translations_folder_path, file)
+                    translation = np.load(translation_path)
+
+                    # Get image path of current frame and following
+                    image_path1 = os.path.join(images_folder_path, frames[k][:5] + '.png')
+                    image_path2 = os.path.join(images_folder_path, frames[k+1][:5] + '.png')
+
+                    # Get data
+                    data_name = '{}_{}_{}.pt'.format(sequence, j, frame[:5])
+                    data_path = os.path.join(self.processed_dir, data_name)
+                    if os.path.exists(data_path):
+                        continue
+
+                    data = create_data(contour, translation, image_path1, image_path2, new_model, self.k)
+
+                    if (data.x.shape[0] != data.y.shape[0]):
+                        print(data_name)
+                        print(data.x.shape)
+                        print(data.y.shape)
+
+                    if self.pre_filter is not None and not self.pre_filter(data):
+                        continue
+
+                    if self.pre_transform is not None:
+                        data = self.pre_transform(data)
+
+                    torch.save(data, data_path)
 
     def get(self, idx):
         file_name = self.processed_file_names[idx]
