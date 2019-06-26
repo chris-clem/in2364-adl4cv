@@ -25,6 +25,7 @@ class ScaleNRotate(object):
             rot = (self.rots[1] - self.rots[0]) * random.random() - \
                   (self.rots[1] - self.rots[0])/2
 
+
             sc = (self.scales[1] - self.scales[0]) * random.random() - \
                  (self.scales[1] - self.scales[0]) / 2 + 1
         elif type(self.rots) == list:
