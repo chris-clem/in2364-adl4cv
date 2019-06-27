@@ -11,6 +11,7 @@ pg_datasets/.ipynb_checkpoints
 
 pg_models/__pycache__
 pg_models/runs
+pg_models/*.pth
 
 pg_networks/__pycache__    
 
