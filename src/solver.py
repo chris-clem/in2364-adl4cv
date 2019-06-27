@@ -93,6 +93,9 @@ class Solver(object):
 
         if verbose: print('START TRAIN.')
         start_time = timeit.default_timer()
+        datetime_now = datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
+        
+        best_val_loss = 1e10
         
         for epoch in range(num_epochs):
             running_loss = 0.0
@@ -155,6 +158,10 @@ class Solver(object):
                 self.loss_epoch_history[key].append(epoch_loss)
 
             val_loss = self._val(model, val_loader, self.L2_loss)
+            
+            if val_loss < best_val_loss:
+                torch.save(model.state_dict(), 'pg_models/{}_best_model.pth'.format(datetime_now))
+                best_val_loss = val_loss
 
 #             writer.add_scalars('loss_data', {'train': train_loss_L2_epoch, 'val': val_loss}, epoch)
 #             writer.add_scalars('metrics L1', {'magnitude': magnitude_loss_L1_epoch, 'angle': angle_loss_L1_epoch}, epoch)

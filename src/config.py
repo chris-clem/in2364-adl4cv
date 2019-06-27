@@ -11,7 +11,7 @@ TRANSLATIONS_FOLDERS_PATH = 'DAVIS_2016/DAVIS/Translations/480p'
 
 PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH = 'pg_datasets/DAVIS_2016'
 
-OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results/'
+OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_OSVOS_Tim/vgg_test_seqs/'
 
 COMBO_RESULTS_FOLDERS_PATH = 'evaluations/'
 
@@ -33,7 +33,7 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
                  'soapbox']
 
 # Data Augmentation
-AUGMENTATION_COUNT = 3
+AUGMENTATION_COUNT = 49
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation
@@ -43,7 +43,7 @@ CLOSING_KERNEL_SIZE = 25
 EPOCHS_WO_AVEGRAD = 200
 LAYER = 9
 K = 32
-NUM_SEQUENCES = 6
+NUM_SEQUENCES = 5
 
 # Training parameters
 BATCH_SIZE = 32
