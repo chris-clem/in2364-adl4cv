@@ -1,14 +1,15 @@
-from distutils.dir_util import copy_tree
-import numpy as np
 import os
+import shutil
 import sys
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch_geometric.data import Data, Dataset
 from torch_geometric.nn import knn_graph
 from torch_geometric.utils import to_undirected
 
+import src.config as cfg
 from src.create_data import create_data
 import OSVOS_PyTorch.networks.vgg_osvos as vo
 from OSVOS_PyTorch.train_online import train
@@ -16,14 +17,20 @@ from OSVOS_PyTorch.train_online import train
 
 class DAVIS2016(Dataset):
     def __init__(self, root, 
-                 contours_folders_path, images_folders_path, translations_folders_path, 
+                 annotations_folders_path, contours_folders_path, 
+                 images_folders_path, translations_folders_path, 
                  layer, k, epochs_wo_avegrad, augmentation_count,
                  skip_sequences, train_sequences, val_sequences,
                  train=True, transform=None, pre_transform=None):
-        # Paths    
+        # Paths
+        self.annotations_folders_path = annotations_folders_path
         self.contours_folders_path = contours_folders_path
         self.images_folders_path = images_folders_path
         self.translations_folders_path = translations_folders_path
+        self.davis_paths = [self.annotations_folders_path,
+                            self.contours_folders_path,
+                            self.images_folders_path,
+                            self.translations_folders_path]
         
         # Hyperparameters
         self.layer = layer
@@ -44,22 +51,29 @@ class DAVIS2016(Dataset):
         
     @property
     def raw_file_names(self):
-        raw_file_names = ['Contours', 'JPEGImages', 'Translations']
+        raw_file_names = ['Annotations', 'Contours', 'Images', 'Translations']
         return raw_file_names
-
+    
+    def download(self):
+         
+        print('Downloading...')
+        
+        for raw_file_name, davis_path in zip(self.raw_file_names, self.davis_paths):
+            raw_dir_path = os.path.join(self.raw_dir, raw_file_name)
+            shutil.move(davis_path, raw_dir_path)
+         
     @property
     def processed_file_names(self):
         
         processed_file_names = []
         
-        # Get path to Images
-        raw_path_images = self.raw_paths[1]
+        # Get path to Annotations
+        raw_path_annotations = self.raw_paths[0]
         
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
-            #if i > 2: break
-            #print('#{}: {}'.format(i, sequence))
+            if i > cfg.DEBUG: break
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
@@ -75,13 +89,11 @@ class DAVIS2016(Dataset):
 
                 j = str(j)
 
-                #print('\t{} #{}'.format('Augmentation', j))            
-                
                 # Get path to Images folder
-                images_folder_path = os.path.join(raw_path_images, sequence, j)
+                annotations_folder_path = os.path.join(raw_path_annotations, sequence, j)
 
                 # Get list of frames
-                frames = os.listdir(images_folder_path)
+                frames = os.listdir(annotations_folder_path)
                 if '.ipynb_checkpoints' in frames:
                     frames.remove('.ipynb_checkpoints')
                 frames.sort()
@@ -89,7 +101,7 @@ class DAVIS2016(Dataset):
                 # Iterate through frames
                 for k, frame in enumerate(frames[:-1]):
 
-                    #if k > 2: break
+                    if k > cfg.DEBUG: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     
                     if (sequence == 'bmx-bumps' and frame == '00059.png'): break
@@ -101,22 +113,6 @@ class DAVIS2016(Dataset):
     
     def __len__(self):
         return len(self.processed_file_names)
-        
-    def  download(self):
-         
-        print('Downloading...')
-         
-        # Copy Contours folder to raw_dir
-        raw_dir_contours = os.path.join(self.raw_dir, 'Contours')
-        copy_tree(self.contours_folders_path, raw_dir_contours)
-        
-        # Copy JPEGImages folder to raw_dir
-        raw_dir_images = os.path.join(self.raw_dir, 'JPEGImages')
-        copy_tree(self.images_folders_path, raw_dir_images)
-        
-        # Copy Translations folder to raw_dir
-        raw_dir_translations = os.path.join(self.raw_dir, 'Translations')
-        copy_tree(self.translations_folders_path, raw_dir_translations)
     
     def _create_osvos_model(self, model_path, layer):
         
@@ -142,12 +138,12 @@ class DAVIS2016(Dataset):
         
     def process(self):
         # Get paths to Contours, Images, and Translations
-        raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
+        raw_path_annotations, raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
-            # if i > 2: break
+            if i > cfg.DEBUG: break
             
             # Skip sequence if needed
             if (sequence in self.skip_sequences): continue
@@ -198,7 +194,7 @@ class DAVIS2016(Dataset):
 
                     file = os.path.splitext(frame)[0] + '.npy'
 
-                    #if k > 2: break
+                    if k > cfg.DEBUG: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     
                     if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
