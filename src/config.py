@@ -32,8 +32,10 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
                  'motocross-jump', 'paragliding-launch', 'parkour', 'scooter-black', 
                  'soapbox']
 
+DEBUG = 2
+
 # Data Augmentation
-AUGMENTATION_COUNT = 49
+AUGMENTATION_COUNT = 2
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation

@@ -66,6 +66,10 @@ def compute_combo_img(contour_pred, osvos_img):
     contour_img = cv2.fillPoly(contour_img, contour_pred, color=(255, 255, 255))
     contour_img = cv2.cvtColor(contour_img.astype(np.float32), cv2.COLOR_RGB2GRAY)
     
+    # Dilate our image
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25))
+    contour_img = cv2.dilate(contour_img, kernel, iterations=1)
+    
     osvos_img = cv2.cvtColor(osvos_img.astype(np.float32), cv2.COLOR_RGB2GRAY)
     osvos_img = np.where(osvos_img >= 255/2, 255, 0)
 
