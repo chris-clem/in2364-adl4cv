@@ -12,10 +12,12 @@
 # In[1]:
 
 
+import os
+
 import cv2
+import imageio
 import matplotlib.pyplot as plt
 import numpy as np
-
 import torch
 import torch.optim as optim
 from torch.utils.data.sampler import SequentialSampler
@@ -31,11 +33,7 @@ from src.vis_utils import plot_img_with_contour_and_translation, plot_translatio
 
 # for auto-reloading extenrnal modules
 # see http://stackoverflow.com/questions/1907993/autoreload-of-modules-in-ipython
-#get_ipython().run_line_magic('load_ext', 'autoreload')
-#get_ipython().run_line_magic('autoreload', '2')
 
-#get_ipython().run_line_magic('matplotlib', 'inline')
-    
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -46,8 +44,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # In[2]:
 
 
-train = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH, 
-                  cfg.CONTOURS_FOLDERS_PATH, cfg.IMAGES_AUGMENTED_FOLDERS_PATH, cfg.TRANSLATIONS_FOLDERS_PATH, 
+train = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH,
+                  cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, cfg.CONTOURS_FOLDERS_PATH, 
+                  cfg.IMAGES_AUGMENTED_FOLDERS_PATH, cfg.TRANSLATIONS_FOLDERS_PATH,
+                  cfg.PARENT_MODEL_PATH,
                   cfg.LAYER, cfg.K, cfg.EPOCHS_WO_AVEGRAD, cfg.AUGMENTATION_COUNT,
                   cfg.SKIP_SEQUENCES, cfg.TRAIN_SEQUENCES[:], cfg.VAL_SEQUENCES[:],
                   train=True)
@@ -56,11 +56,13 @@ train = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH,
 # In[3]:
 
 
-val = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH, 
-                cfg.CONTOURS_FOLDERS_PATH, cfg.IMAGES_AUGMENTED_FOLDERS_PATH, cfg.TRANSLATIONS_FOLDERS_PATH, 
-                cfg.LAYER, cfg.K, cfg.EPOCHS_WO_AVEGRAD, 1,
-                cfg.SKIP_SEQUENCES, cfg.TRAIN_SEQUENCES[:], cfg.VAL_SEQUENCES[:],
-                train=False)
+val = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH,
+                  cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, cfg.CONTOURS_FOLDERS_PATH, 
+                  cfg.IMAGES_AUGMENTED_FOLDERS_PATH, cfg.TRANSLATIONS_FOLDERS_PATH,
+                  cfg.PARENT_MODEL_PATH,
+                  cfg.LAYER, cfg.K, cfg.EPOCHS_WO_AVEGRAD, 0,
+                  cfg.SKIP_SEQUENCES, cfg.TRAIN_SEQUENCES[:], cfg.VAL_SEQUENCES[:],
+                  train=False)
 
 
 # In[4]:
@@ -83,10 +85,21 @@ for i in range(num_to_display):
     rand_i = np.random.randint(0, len(train))
     data = train[rand_i]
     
+    # Load corresponding image
+    processed_file_name = train.processed_file_names[rand_i]
+    folder = processed_file_name[:-11]
+    augmentation_count = processed_file_name[-10:-9]
+    file_name = processed_file_name[-8:-3]
+    
+    image_path = os.path.join(val.raw_paths[0], folder, augmentation_count,
+                                ('{}{}'.format(file_name, '.png')))
+    
+    image = imageio.imread(image_path)
+    
     ax = plt.subplot(1, num_to_display, i + 1)
     ax.set_title('Sample #{}'.format(rand_i))
     
-    plot_img_with_contour_and_translation(data.img, data.contour, data.y)
+    plot_img_with_contour_and_translation(image, data.contour, data.y)
 
 
 # ## Simple GCN
@@ -143,31 +156,29 @@ for i in range(num_to_display):
     rand_i = np.random.randint(0, num_val)
     data = train[rand_i]
     
+    # Load corresponding image
+    processed_file_name = train.processed_file_names[rand_i]
+    folder = processed_file_name[:-11]
+    augmentation_count = processed_file_name[-10:-9]
+    file_name = processed_file_name[-8:-3]
+    
+    image_path = os.path.join(val.raw_paths[0], folder, augmentation_count,
+                                ('{}{}'.format(file_name, '.png')))
+    
+    image = imageio.imread(image_path)
+    
     with torch.no_grad():
         translation_pred = overfit_model(data)
         
     ax = plt.subplot(1, num_to_display, i + 1)
     ax.set_title('Sample #{}'.format(rand_i))
     
-    plot_translations(data.img, data.contour, data.y, translation_pred)    
-
-
-# In[9]:
-
-
-#Show test run for one example image
-original_img = 'DAVIS_2016/DAVIS/JPEGImages/480p/bear/00001.png'
-osvos_img = cv2.imread('OSVOS_PyTorch/models/Results/bear/00001.png')
-contour_0 = train[0].contour
-translation_0_1_pred = overfit_model(train[0])
-contour_1_pred = contour_0.type(torch.DoubleTensor).add(translation_0_1_pred)
-
-plot_combo_img(contour_1_pred, osvos_img)
+    plot_translations(image, data.contour, data.y, translation_pred)
 
 
 # ### Train
 
-# In[10]:
+# In[9]:
 
 
 train_loader = DataLoader(train, batch_size=cfg.BATCH_SIZE, shuffle=True)
@@ -186,7 +197,7 @@ solver.train(model, train_loader, val_loader,
 torch.save(model.state_dict(), 'pg_models/trained_model.pth')
 
 
-# In[11]:
+# In[10]:
 
 
 plot_loss(solver)
@@ -194,7 +205,7 @@ plot_loss(solver)
 
 # ### Display trained outputs
 
-# In[16]:
+# In[11]:
 
 
 model.cpu()
@@ -210,18 +221,29 @@ for i in range(num_to_display):
     rand_i = np.random.randint(0, len(val))
     data = val[rand_i]
     
+    # Load corresponding image
+    processed_file_name = val.processed_file_names[rand_i]
+    folder = processed_file_name[:-11]
+    augmentation_count = processed_file_name[-10:-9]
+    file_name = processed_file_name[-8:-3]
+    
+    image_path = os.path.join(val.raw_paths[0], folder, augmentation_count,
+                                ('{}{}'.format(file_name, '.png')))
+    
+    image = imageio.imread(image_path)
+    
     with torch.no_grad():
         translation_pred = model(data)
     
     ax = plt.subplot(1, num_to_display, i + 1)
     ax.set_title('Sample #{}'.format(rand_i))
     
-    plot_translations(data.img, data.contour, data.y, translation_pred) 
+    plot_translations(image, data.contour, data.y, translation_pred) 
 
 
 # ### Hyperparameter Tuning
 
-# In[13]:
+# In[12]:
 
 
 train_loader = DataLoader(train, batch_size=cfg.BATCH_SIZE, shuffle=True)

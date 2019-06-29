@@ -6,9 +6,6 @@ import numpy as np
 def plot_img_with_contour_and_translation(img, contour, translation_gt):
     
     # Plot image
-    img = img.numpy().astype(np.int64)
-    img = np.squeeze(img)
-    img = np.moveaxis(img, 0, 2)
     plt.imshow(img)
     
     # Plot contour
@@ -28,9 +25,6 @@ def plot_img_with_contour_and_translation(img, contour, translation_gt):
 def plot_translations(img, contour, translation_gt, translation_pred):
     
     # Plot image
-    img = img.numpy().astype(np.int64)
-    img = np.squeeze(img)
-    img = np.moveaxis(img, 0, 2)
     plt.imshow(img)    
     
     # Plot ground truth next contour

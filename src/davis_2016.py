@@ -18,7 +18,8 @@ from OSVOS_PyTorch.train_online import train
 class DAVIS2016(Dataset):
     def __init__(self, root, 
                  annotations_folders_path, contours_folders_path, 
-                 images_folders_path, translations_folders_path, 
+                 images_folders_path, translations_folders_path,
+                 parent_model_path,
                  layer, k, epochs_wo_avegrad, augmentation_count,
                  skip_sequences, train_sequences, val_sequences,
                  train=True, transform=None, pre_transform=None):
@@ -31,12 +32,13 @@ class DAVIS2016(Dataset):
                             self.contours_folders_path,
                             self.images_folders_path,
                             self.translations_folders_path]
+        self.parent_model_path = parent_model_path
         
         # Hyperparameters
         self.layer = layer
         self.k = k
         self.epochs_wo_avegrad = epochs_wo_avegrad
-        self.augmentation_count = augmentation_count
+        self.augmentation_count = augmentation_count + 1
         
         # Sequences
         self.skip_sequences = skip_sequences
@@ -140,6 +142,10 @@ class DAVIS2016(Dataset):
         # Get paths to Contours, Images, and Translations
         raw_path_annotations, raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
+        # Create OSVOS model for feature vector extraction
+        print('Create new OSVOS model...')
+        new_model = self._create_osvos_model(self.parent_model_path, self.layer)
+        
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
@@ -155,28 +161,13 @@ class DAVIS2016(Dataset):
                 if (sequence in self.train_sequences): continue
             
             print('#{}: {}'.format(i, sequence))
-            
-            # Start train_online for this sequence 
-            basedirname = os.path.dirname(os.path.dirname(__file__))
-            model_path = os.path.join(basedirname, ('OSVOS_PyTorch/models/' + str(sequence) + '_epoch-' + str(5*self.epochs_wo_avegrad-1) + '.pth'))
-            if not os.path.exists(model_path):
-                print('Start online training...')
-                os.environ['SEQ_NAME'] = str(sequence)
-                train(self.epochs_wo_avegrad)
-                print('Finished online training...')
-            else:
-                print('Model available')
-            
-            # Create OSVOS model for feature vector extraction
-            print('Create new OSVOS model...')
-            new_model = self._create_osvos_model(model_path, self.layer)
-            
+                       
             # Iterate through augmentations:
             for j in range(self.augmentation_count):
 
                 j = str(j)
 
-                #print('\t{} #{}'.format('Augmentation', j))   
+                print('\t{} #{}'.format('Augmentation', j))   
             
                 # Get paths to current sequence in Contours and Translations folders
                 contours_folder_path = os.path.join(raw_path_contours, sequence, j)
@@ -210,8 +201,8 @@ class DAVIS2016(Dataset):
                     translation = np.load(translation_path)
 
                     # Get image path of current frame and following
-                    image_path1 = os.path.join(images_folder_path, frames[k][:5] + '.png')
-                    image_path2 = os.path.join(images_folder_path, frames[k+1][:5] + '.png')
+                    image_path1 = os.path.join(images_folder_path, frames[k][:5] + '.jpg')
+                    image_path2 = os.path.join(images_folder_path, frames[k+1][:5] + '.jpg')
 
                     # Get data
                     data_name = '{}_{}_{}.pt'.format(sequence, j, frame[:5])

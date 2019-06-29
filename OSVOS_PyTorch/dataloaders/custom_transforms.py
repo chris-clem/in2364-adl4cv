@@ -105,12 +105,11 @@ class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
-
         for elem in sample.keys():
             if 'fname' in elem:
                 continue
             tmp = sample[elem]
-
+            
             if tmp.ndim == 2:
                 tmp = tmp[:, :, np.newaxis]
 

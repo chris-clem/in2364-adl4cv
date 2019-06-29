@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 from scipy.misc import imresize
 
-from dataloaders.helpers import *
+from OSVOS_PyTorch.dataloaders.helpers import *
 from torch.utils.data import Dataset
 
 

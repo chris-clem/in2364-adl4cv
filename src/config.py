@@ -1,6 +1,7 @@
 # DAVIS Paths
 ANNOTATIONS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Annotations/480p/"
 ANNOTATIONS_AUGMENTED_FOLDERS_PATH = "DAVIS_2016/DAVIS/Annotations_augmented/"
+RAW_ANNOTATIONS_PATH = 'pg_datasets/DAVIS_2016/raw/Annotations'
 
 CONTOURS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Contours/"
 
@@ -12,10 +13,12 @@ TRANSLATIONS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Translations/"
 # PG Dataset Paths
 PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH = 'pg_datasets/DAVIS_2016'
 
-
 # Results Paths
-OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_OSVOS_Tim/vgg_test_seqs/'
+OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_OSVOS_Tim/'
 COMBO_RESULTS_FOLDERS_PATH = 'evaluations/'
+
+PARENT_MODEL_PATH = 'OSVOS_PyTorch/models/parent_epoch-239.pth'
+PARENT_MODEL_RESULTS_PATH = 'OSVOS_PyTorch/models/Results_parent_model'
 
 # Sequences
 SKIP_SEQUENCES = []
@@ -34,10 +37,10 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
                  'motocross-jump', 'paragliding-launch', 'parkour', 'scooter-black', 
                  'soapbox']
 
-DEBUG = 2
+DEBUG = 1000
 
 # Data Augmentation
-AUGMENTATION_COUNT = 2
+AUGMENTATION_COUNT = 5
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation
@@ -53,4 +56,4 @@ NUM_SEQUENCES = 5
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.0
-NUM_EPOCHS = 20
+NUM_EPOCHS = 10

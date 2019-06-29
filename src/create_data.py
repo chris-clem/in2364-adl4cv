@@ -105,6 +105,6 @@ def create_data(contour, translation, img_path1, img_path2, new_model, k):
     y = torch.from_numpy(translation.astype(np.float64))
 
     # Create data object
-    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, img=img1, contour=contour)
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, contour=contour)
     
     return data
