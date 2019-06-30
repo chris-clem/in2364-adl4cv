@@ -10,7 +10,7 @@ from torch_geometric.nn import knn_graph
 from torch_geometric.utils import to_undirected
 
 import src.config as cfg
-from src.create_data import create_data
+from src.create_data import create_osvos_model, create_data
 import OSVOS_PyTorch.networks.vgg_osvos as vo
 from OSVOS_PyTorch.train_online import train
 
@@ -116,35 +116,13 @@ class DAVIS2016(Dataset):
     def __len__(self):
         return len(self.processed_file_names)
     
-    def _create_osvos_model(self, model_path, layer):
-        
-        model = vo.OSVOS(pretrained=0)
-        model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
-        model.eval()            
-            
-        children = []
-        for num, stage in enumerate(model.stages):
-            if type(stage) == torch.nn.modules.container.Sequential:
-                for child in stage.children():
-                    children.append(child)
-
-        new_model = nn.Sequential(*children[:layer])
-        new_model = new_model.double()
-        new_model.eval()
-            
-        gpu_id = 0
-        device = torch.device("cuda:"+str(gpu_id) if torch.cuda.is_available() else "cpu")
-        new_model.to(device)
-        
-        return new_model
-        
     def process(self):
         # Get paths to Contours, Images, and Translations
         raw_path_annotations, raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
         # Create OSVOS model for feature vector extraction
         print('Create new OSVOS model...')
-        new_model = self._create_osvos_model(self.parent_model_path, self.layer)
+        new_model = create_osvos_model(self.parent_model_path, self.layer)
         
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
@@ -201,8 +179,8 @@ class DAVIS2016(Dataset):
                     translation = np.load(translation_path)
 
                     # Get image path of current frame and following
-                    image_path1 = os.path.join(images_folder_path, frames[k][:5] + '.jpg')
-                    image_path2 = os.path.join(images_folder_path, frames[k+1][:5] + '.jpg')
+                    image_path_0 = os.path.join(images_folder_path, frames[k][:5] + '.jpg')
+                    image_path_1 = os.path.join(images_folder_path, frames[k+1][:5] + '.jpg')
 
                     # Get data
                     data_name = '{}_{}_{}.pt'.format(sequence, j, frame[:5])
@@ -210,12 +188,7 @@ class DAVIS2016(Dataset):
                     if os.path.exists(data_path):
                         continue
 
-                    data = create_data(contour, translation, image_path1, image_path2, new_model, self.k)
-
-                    if (data.x.shape[0] != data.y.shape[0]):
-                        print(data_name)
-                        print(data.x.shape)
-                        print(data.y.shape)
+                    data = create_data(contour, translation, image_path_0, image_path_1, new_model, self.k)
 
                     if self.pre_filter is not None and not self.pre_filter(data):
                         continue

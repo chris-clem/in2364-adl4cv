@@ -3,55 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_img_with_contour_and_translation(img, contour, translation_gt):
+def close_image(image, closing_kernel_size):
+    '''Returns the image that is closed with a elliptical kernel.'''
     
-    # Plot image
-    plt.imshow(img)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(closing_kernel_size, closing_kernel_size))
+    closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
     
-    # Plot contour
-    contour = contour.numpy()
-    plt.scatter(contour[:, 0], contour[:, 1], s=80, marker='.', c='b')
+    return closing
 
-    # Plot ground truth translation
-    translation_gt = translation_gt.numpy()
-    for c, t in zip(contour, translation_gt):
-        plt.arrow(c[0], c[1],
-                  t[0], t[1],
-                  width=1, color='g')
-    
-    plt.show()
-    
 
-def plot_translations(img, contour, translation_gt, translation_pred):
-    
-    # Plot image
-    plt.imshow(img)    
-    
-    # Plot ground truth next contour
-    contour = contour.numpy()
-    translation_gt = translation_gt.numpy()
-    next_contour_gt = contour + translation_gt
-    plt.scatter(next_contour_gt[:, 0], next_contour_gt[:, 1], s=80, marker='.', c='g')
-    
-    # Plot predicted next contour
-    translation_pred = translation_pred.numpy()
-    next_contour_pred = contour + translation_pred
-    plt.scatter(next_contour_pred[:, 0], next_contour_pred[:, 1], s=80, marker='.', c='r')
-    
-    plt.show()
-    
-    
-def plot_loss(solver):
-    
-    plt.figure(figsize=(10,7))
-    plt.plot(solver.loss_epoch_history['translation_loss_L2'], '-', label='train loss')
-    plt.plot(solver.val_loss_history, '-', label='val loss')
-    plt.xlabel('epochs')
-    plt.ylabel('loss')
-    plt.legend()
-    plt.show()
-    
-    
 def compute_combo_img(contour_pred, osvos_img):
     '''Create combo image from predicted contour and osvos prediction.'''
     
@@ -72,6 +32,34 @@ def compute_combo_img(contour_pred, osvos_img):
     deletions_osvos_img = np.where(np.logical_and(osvos_img==255, contour_img!=255), 1, 0)
     
     return contour_img, combo_img, deletions_contour_img, deletions_osvos_img
+
+
+def extract_longest_contour(image, closing_kernel_size, method):
+    '''Returns the contour with the most points from a given image.'''
+    
+    # Close image
+    image_closed = close_image(image, closing_kernel_size)
+    
+    # Apply threshold to turn it into binary image
+    ret, thresh = cv2.threshold(image_closed, 127, 255, 0)
+
+    # Find contour
+    # Change method for different number of points:
+    # CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, CHAIN_APPROX_TC89_L1, CHAIN_APPROX_TC89_KCOS
+    contours, _ = cv2.findContours(image=thresh,
+                                   mode=cv2.RETR_TREE,
+                                   method=method)
+    
+    # Get longest contour from contours
+    longest_contour = max(contours, key=len).astype(np.float32)
+    
+    return longest_contour
+
+
+def load_gray_img(img_path):
+    img = cv2.imread(img_path)
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return img_gray
 
 
 def plot_combo_img(contour_pred, osvos_img):
@@ -101,3 +89,53 @@ def plot_combo_img(contour_pred, osvos_img):
     ax.imshow(deletions_osvos_img, cmap='gray')
     
     plt.show()
+    
+
+def plot_img_with_contour_and_translation(img, contour, translation_gt):
+    
+    # Plot image
+    plt.imshow(img)
+    
+    # Plot contour
+    contour = contour.numpy()
+    plt.scatter(contour[:, 0], contour[:, 1], s=80, marker='.', c='b')
+
+    # Plot ground truth translation
+    translation_gt = translation_gt.numpy()
+    for c, t in zip(contour, translation_gt):
+        plt.arrow(c[0], c[1],
+                  t[0], t[1],
+                  width=1, color='g')
+    
+    plt.show()
+    
+
+def plot_loss(solver):
+    
+    plt.figure(figsize=(10,7))
+    plt.plot(solver.loss_epoch_history['translation_loss_L2'], '-', label='train loss')
+    plt.plot(solver.val_loss_history, '-', label='val loss')
+    plt.xlabel('epochs')
+    plt.ylabel('loss')
+    plt.legend()
+    plt.show()
+    
+
+def plot_translations(img, contour, translation_gt, translation_pred):
+    
+    # Plot image
+    plt.imshow(img)    
+    
+    # Plot ground truth next contour
+    contour = contour.numpy()
+    translation_gt = translation_gt.numpy()
+    next_contour_gt = contour + translation_gt
+    plt.scatter(next_contour_gt[:, 0], next_contour_gt[:, 1], s=80, marker='.', c='g')
+    
+    # Plot predicted next contour
+    translation_pred = translation_pred.numpy()
+    next_contour_pred = contour + translation_pred
+    plt.scatter(next_contour_pred[:, 0], next_contour_pred[:, 1], s=80, marker='.', c='r')
+    
+    plt.show()
+

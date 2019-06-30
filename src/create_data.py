@@ -13,7 +13,29 @@ import OSVOS_PyTorch.networks.vgg_osvos as vo
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def get_OSVOS_feature_vectors(key_point_positions, img, new_model):
+def create_osvos_model(model_path, layer):
+
+    model = vo.OSVOS(pretrained=0)
+    model.load_state_dict(torch.load(model_path, map_location=lambda storage, loc: storage))
+    model.eval()            
+
+    children = []
+    for num, stage in enumerate(model.stages):
+        if type(stage) == torch.nn.modules.container.Sequential:
+            for child in stage.children():
+                children.append(child)
+
+    new_model = nn.Sequential(*children[:layer])
+    new_model = new_model.double()
+    new_model.eval()
+
+    gpu_id = 0
+    device = torch.device("cuda:"+str(gpu_id) if torch.cuda.is_available() else "cpu")
+    new_model.to(device)
+
+    return new_model
+
+def get_OSVOS_feature_vectors(contour, img, osvos_model):
     """
     Function takes list of keypoints as input and outputs OSVOS feature vector for each point
     key point positions list of tuples [(x, y), ...]
@@ -30,7 +52,7 @@ def get_OSVOS_feature_vectors(key_point_positions, img, new_model):
     img = img.to(device)
     
     with torch.no_grad():
-        feature_vector = new_model(img)
+        feature_vector = osvos_model(img)
     #print('Feature vector shape:', feature_vector.shape)
 
     #Extract vector out of output tensor depending on keypoint location
@@ -39,9 +61,9 @@ def get_OSVOS_feature_vectors(key_point_positions, img, new_model):
     _, _, height_fv, width_fv = feature_vector.detach().cpu().numpy().shape
     
     feature_vectors = []
-    for key_point_position in key_point_positions:
-	    x_kp, y_kp = key_point_position
-	    x_fv, y_fv = round(float(x_kp) * width_fv / width_img) - 1, round(float(y_kp) * height_fv / height_img) - 1
+    for contour_point in contour:
+	    x_cp, y_cp = contour_point
+	    x_fv, y_fv = int(float(x_cp) * width_fv / width_img) - 2, int(float(y_cp) * height_fv / height_img) - 2
 	    feature_vectors.append(feature_vector[: ,: , y_fv, x_fv].cpu().numpy())
 
     feature_vectors = np.squeeze(np.array(feature_vectors))
@@ -68,28 +90,24 @@ def get_edge_attribute(contour, edge_index):
     return torch.from_numpy(edge_attr)
 
 
-def create_data(contour, translation, img_path1, img_path2, new_model, k):
+def create_data(contour, translation, img_path_0, img_path_1, osvos_model, k):
     '''Returns data object.'''
     
     contour = torch.from_numpy(contour)
-    img1 = np.moveaxis(imread(img_path1), 2, 0).astype(np.float64)
-    img1 = np.expand_dims(img1, axis=0)
-    img1 = torch.from_numpy(img1)    
     
-    img2 = np.moveaxis(imread(img_path2), 2, 0).astype(np.float64)
-    img2 = np.expand_dims(img2, axis=0)
-    img2 = torch.from_numpy(img2)
+    img_0 = np.moveaxis(imread(img_path_0), 2, 0).astype(np.float64)
+    img_0 = np.expand_dims(img_0, axis=0)
+    img_0 = torch.from_numpy(img_0)    
+    
+    img_1 = np.moveaxis(imread(img_path_1), 2, 0).astype(np.float64)
+    img_1 = np.expand_dims(img_1, axis=0)
+    img_1 = torch.from_numpy(img_1)
     
     # x: Node feature matrix with shape [num_nodes, num_node_features]
     # The feature of each node is the OSVOS feature vector of the next frame
-    # TODO 
-    # x = get_OSVOS_feature_vectors(contour)
-    x_1 = get_OSVOS_feature_vectors(contour, img1, new_model)
-    #print(x_1.shape)
-    x_2 = get_OSVOS_feature_vectors(contour, img2, new_model)
-    #print(x_2.shape)
+    x_1 = get_OSVOS_feature_vectors(contour, img_0, osvos_model)
+    x_2 = get_OSVOS_feature_vectors(contour, img_1, osvos_model)
     x = torch.cat((x_1, x_2), 1)
-    #print(x.shape)
     
     # edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
     # Each node should be connected to its K nearest neighbours
@@ -102,9 +120,14 @@ def create_data(contour, translation, img_path1, img_path2, new_model, k):
     
     # y: Target to train against (may have arbitrary shape)
     # The target of each node is the displacement of the node between the current and the next frame
-    y = torch.from_numpy(translation.astype(np.float64))
+    if translation == None:
+        data = Data(x=x, edge_index=edge_index, 
+                    edge_attr=edge_attr, contour=contour)
+    else:
+        data = Data(x=x, edge_index=edge_index, 
+                    edge_attr=edge_attr, y=y, contour=contour)
 
     # Create data object
-    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, contour=contour)
+    
     
     return data
