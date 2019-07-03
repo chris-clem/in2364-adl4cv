@@ -57,12 +57,11 @@ class DAVIS2016(Dataset):
         return raw_file_names
     
     def download(self):
-         
         print('Downloading...')
         
         for raw_file_name, davis_path in zip(self.raw_file_names, self.davis_paths):
             raw_dir_path = os.path.join(self.raw_dir, raw_file_name)
-            shutil.move(davis_path, raw_dir_path)
+            shutil.copytree(davis_path, raw_dir_path)
          
     @property
     def processed_file_names(self):

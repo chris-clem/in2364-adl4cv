@@ -62,10 +62,14 @@ def get_OSVOS_feature_vectors(contour, img, osvos_model):
     
     feature_vectors = []
     for contour_point in contour:
-	    x_cp, y_cp = contour_point
-	    x_fv, y_fv = int(float(x_cp) * width_fv / width_img) - 2, int(float(y_cp) * height_fv / height_img) - 2
-	    feature_vectors.append(feature_vector[: ,: , y_fv, x_fv].cpu().numpy())
-
+        x_cp, y_cp = contour_point
+        #if contourpoint in image return feature vector else zero vector
+        if (x_cp <= width_img) and (y_cp <= height_img):
+            x_fv, y_fv = int(float(x_cp) * width_fv / width_img) - 2, int(float(y_cp) * height_fv / height_img) - 2
+            feature_vectors.append(feature_vector[: ,: , y_fv, x_fv].cpu().numpy())
+        else:
+            feature_vectors.append(np.zeros(feature_vector.shape[1]))
+        
     feature_vectors = np.squeeze(np.array(feature_vectors))
     return torch.from_numpy(feature_vectors)
 
@@ -118,12 +122,13 @@ def create_data(contour, translation, img_path_0, img_path_1, osvos_model, k):
     # The feature of each edge is the distance between the two nodes it connects
     edge_attr = get_edge_attribute(contour, edge_index)
     
-    # y: Target to train against (may have arbitrary shape)
     # The target of each node is the displacement of the node between the current and the next frame
-    if translation == None:
+    if translation is None:
         data = Data(x=x, edge_index=edge_index, 
                     edge_attr=edge_attr, contour=contour)
     else:
+        # y: Target to train against (may have arbitrary shape)
+        y = torch.from_numpy(translation.astype(np.float64))
         data = Data(x=x, edge_index=edge_index, 
                     edge_attr=edge_attr, y=y, contour=contour)
 

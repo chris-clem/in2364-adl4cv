@@ -138,4 +138,3 @@ def plot_translations(img, contour, translation_gt, translation_pred):
     plt.scatter(next_contour_pred[:, 0], next_contour_pred[:, 1], s=80, marker='.', c='r')
     
     plt.show()
-
