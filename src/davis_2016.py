@@ -18,7 +18,6 @@ from torch_geometric.utils import to_undirected
 import src.config as cfg
 from src.create_data import create_osvos_model, create_data
 import OSVOS_PyTorch.networks.vgg_osvos as vo
-from OSVOS_PyTorch.train_online import train
 
 
 class DAVIS2016(Dataset):

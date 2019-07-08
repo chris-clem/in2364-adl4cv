@@ -1,8 +1,12 @@
+"""Class for a PyTorch Geometric DynamicEdgeConv network from the paper
+Dynamic Graph CNN for Learning on Point Clouds
+https://arxiv.org/abs/1801.07829
+"""
+
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU, BatchNorm1d as BN
-
 from torch_cluster import knn_graph
 from torch_geometric.nn import EdgeConv
 
@@ -17,22 +21,6 @@ def MLP(channels, batch_norm=True):
 
 # from https://github.com/rusty1s/pytorch_geometric/blob/master/torch_geometric/nn/conv/edge_conv.py
 class DynamicEdgeConv(EdgeConv):
-    r"""The dynamic edge convolutional operator from the `"Dynamic Graph CNN
-    for Learning on Point Clouds" <https://arxiv.org/abs/1801.07829>`_ paper
-    (see :class:`torch_geometric.nn.conv.EdgeConv`), where the graph is
-    dynamically constructed using nearest neighbors in the feature space.
-    Args:
-        nn (torch.nn.Module): A neural network :math:`h_{\mathbf{\Theta}}` that
-            maps pair-wise concatenated node features :obj:`x` of shape
-            `:obj:`[-1, 2 * in_channels]` to shape :obj:`[-1, out_channels]`,
-            *e.g.* defined by :class:`torch.nn.Sequential`.
-        k (int): Number of nearest neighbors.
-        aggr (string): The aggregation operator to use (:obj:`"add"`,
-            :obj:`"mean"`, :obj:`"max"`). (default: :obj:`"max"`)
-        **kwargs (optional): Additional arguments of
-            :class:`torch_geometric.nn.conv.MessagePassing`.
-    """
-
     def __init__(self, nn, k, aggr='max', **kwargs):
         super(DynamicEdgeConv, self).__init__(nn=nn, aggr=aggr, **kwargs)
         self.k = k
