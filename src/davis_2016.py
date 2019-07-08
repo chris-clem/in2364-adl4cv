@@ -173,7 +173,7 @@ class DAVIS2016(Dataset):
         * edge_index: Graph connectivity in COO format of shape (2, num_edges) and type torch.long
                       Each node should be connected to its K nearest neighbours
         * edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
-                     The feature of each edge is the distance between the two nodes it connects
+                     The feature of each edge is the inverse distance between the two nodes it connects
         * y: The target of each node is the displacement of the node between the current and the next frame
         """
         

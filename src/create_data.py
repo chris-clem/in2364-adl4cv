@@ -110,7 +110,7 @@ def get_OSVOS_feature_vectors(contour, img, osvos_model):
 
 def get_edge_attribute(contour, edge_index):
     """Returns an edge feature matrix of shape (num_edges, num_edge_features)
-       containing the distances between the node each edge connects.
+       containing the inverse distances between the node each edge connects.
 
     Parameters
     ----------
@@ -133,7 +133,8 @@ def get_edge_attribute(contour, edge_index):
         contour_point_0 = contour[edge[0]] 
         contour_point_1 = contour[edge[1]]
         dist = np.linalg.norm(contour_point_0-contour_point_1)
-        edge_attr.append([dist])
+        inverse_dist = 1 / (1 + dist)
+        edge_attr.append([inverse_dist])
     
     edge_attr = np.array(edge_attr).astype(np.float64)
     edge_attr = np.squeeze(edge_attr)
@@ -151,7 +152,7 @@ def create_data(contour, translation, img_path_0, img_path_1, osvos_model, k):
     * edge_index: Graph connectivity in COO format of shape (2, num_edges) and type torch.long
                   Each node should be connected to its K nearest neighbours
     * edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
-                 The feature of each edge is the distance between the two nodes it connects
+                 The feature of each edge is the inverse distance between the two nodes it connects
     * y, optianl: The target of each node is the displacement of the node between the current 
                   and the next frame
 

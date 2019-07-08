@@ -1,3 +1,5 @@
+"""Solver class for training a network."""
+
 from datetime import datetime
 import os
 import timeit
@@ -13,36 +15,27 @@ import cv2
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def iou_numpy(outputs: np.array, labels: np.array):
-    
-    #intersection = (outputs & labels).sum((1, 2))
-    #union = (outputs | labels).sum((1, 2))
-    #thresholded = np.ceil(np.clip(20 * (iou - 0.5), 0, 10)) / 10 
-    #print(outputs.shape, labels.shape)
-    for i in range(16):
-        #print(np.sum(outputs[i]), np.sum(labels[i]))
-        intersection = np.sum(np.where(np.logical_and(outputs[i]==1, labels[i]==1), 1, 0))
-        union = np.sum(np.where(np.logical_or(outputs[i]==1, labels[i]==1), 1, 0))
-        iou = intersection / (union+1e-8)
-        #print('\t', iou)
-        
-        
-    intersection = np.sum(np.where(np.logical_and(outputs==1, labels==1), 1, 0))
-    union = np.sum(np.where(np.logical_or(outputs==1, labels==1), 1, 0))
-
-    iou = (intersection) / (union+1e-8)
-    
-    return iou
-
-
 class Solver(object):
     default_adam_args = {"lr": 1e-4,
                          "betas": (0.9, 0.999),
                          "eps": 1e-8,
                          "weight_decay": 0.0}
 
-    def __init__(self, optimizer=Adam, optim_args={},
-                 L2_loss=MSELoss(), L1_loss=L1Loss()):
+    def __init__(self, optimizer=Adam, optim_args={}, L2_loss=MSELoss(), L1_loss=L1Loss()):
+        """Constrcutor for solver class.
+
+        Parameters
+        ----------
+        optimizer : torch.optim
+            Optimizer to use (default: Adam)
+        optim_args : dict
+            Arguments for optimizer which are merged with default_adam_args
+        L2_loss : torch.nn Loss
+            L2 loss function to use (default: MSELoss)
+        L1_loss : torch.nn Loss
+            L1 loss function to use (default: L1Loss), only used as comparision 
+        """
+        
         optim_args_merged = self.default_adam_args.copy()
         optim_args_merged.update(optim_args)
         self.optim_args = optim_args_merged
@@ -53,42 +46,46 @@ class Solver(object):
         self._reset_histories()
 
     def _reset_histories(self):
-        """
-        Resets train and val histories for the accuracy and the loss.
-        """
-        self.loss = {'translation_loss_L1': [], 'translation_loss_L2': [], 'translation_loss_L1_rounded': [],
-                     'translation_loss_L2_rounded': [], 'magnitude_loss_L1': [], 'magnitude_loss_L2': [],
-                     'angle_loss_L1': [], 'angle_loss_L2': [], 'magnitude_loss_L1_rounded': [],
-                     'magnitude_loss_L2_rounded': [], 'angle_loss_L1_rounded': [], 'angle_loss_L2_rounded': []}
+        """ Resets train and val histories for the losses."""
+        
+        self.loss = {'translation_loss_L1': [], 'translation_loss_L2': [], 
+                     'magnitude_loss_L1': [], 'magnitude_loss_L2': [],
+                     'angle_loss_L1': [], 'angle_loss_L2': []}
         
         self.loss_epoch_history = {key: [] for key in list(self.loss.keys())}
         
         self.val_loss_history = []
 
-    def train(self, model, 
-              train_loader, val_loader, 
+    def train(self, model, train_loader, val_loader, 
               num_epochs=10, log_nth=0, verbose=False):
+        """Train a given model with the provided data.
+
+        Parameters
+        ----------
+        model : torch.nn.Module
+            Model object initialized from a torch.nn.Module
+        train_loader : torch.utils.data.DataLoader
+            Train data in torch.utils.data.DataLoader
+        val_loader : torch.utils.data.DataLoader
+            Val data in torch.utils.data.DataLoader
+        num_epochs : int
+            Total number of training epochs
+        log_nth : int
+            Log training accuracy and loss every nth iteration
         """
-        Train a given model with the provided data.
-        Inputs:
-        - model: model object initialized from a torch.nn.Module
-        - train_loader: train data in torch.utils.data.DataLoader
-        - val_loader: val data in torch.utils.data.DataLoader
-        - num_epochs: total number of training epochs
-        - log_nth: log training accuracy and loss every nth iteration
-        """
+        
         optimizer = self.optimizer(model.parameters(), **self.optim_args)
         self._reset_histories()
-        iter_per_epoch = len(train_loader)
 
         model.double()
         model.to(device)
     
-        # prepare the net for training
+        # Prepare the net for training
         model.train()
         
         # Logging into Tensorboard
-        log_dir = os.path.join('pg_models', 'runs', datetime.now().strftime('%b%d_%H-%M-%S'))
+        log_dir = os.path.join('pg_models', 'runs', 
+                               datetime.now().strftime('%b%d_%H-%M-%S'))
         writer = SummaryWriter(logdir=log_dir, comment='train')
 
         if verbose: print('START TRAIN.')
@@ -115,8 +112,6 @@ class Solver(object):
                 
                 self.loss['translation_loss_L1'].append(self.L1_loss(out_flatten, y_flatten))
                 self.loss['translation_loss_L2'].append(self.L2_loss(out_flatten, y_flatten))             
-                self.loss['translation_loss_L1_rounded'].append(self.L1_loss(torch.round(out_flatten), y_flatten))
-                self.loss['translation_loss_L2_rounded'].append(self.L2_loss(torch.round(out_flatten), y_flatten))  
                 
                 # backward pass to calculate the weight gradients
                 self.loss['translation_loss_L2'][-1].backward()
@@ -128,23 +123,15 @@ class Solver(object):
                 running_loss += self.loss['translation_loss_L2'][-1].item()
                 
                 #Compute magnitude angle metrics
-                #magnitude_loss_L1, angle_loss_L1 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = False)
-                #magnitude_loss_L2, angle_loss_L2 = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = False)
-                #magnitude_loss_L1_rounded, angle_loss_L1_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L1_loss, rounded = True)
-                #magnitude_loss_L2_rounded, angle_loss_L2_rounded = self._angles_magnitude_metric(out_flatten, y_flatten, self.L2_loss, rounded = True)
-                #Compute IOU metric
-                #contour = data.contour.double()
-                #self._IOU_of_resulting_shapes(contour=contour, translation_pred=out, translation_gt=data.y, img_shape=data.img.shape)
-                
+                #magnitude_loss_L1, angle_loss_L1 = self._angles_magnitude_metric(out_flatten, y_flatten, 
+                #self.L1_loss, rounded=False)
+                #magnitude_loss_L2, angle_loss_L2 = self._angles_magnitude_metric(out_flatten, y_flatten, 
+                #self.L2_loss, rounded=False)
                 
                 #self.loss['magnitude_loss_L1'].append(magnitude_loss_L1)
                 #self.loss['angle_loss_L1'].append(angle_loss_L1)
                 #self.loss['magnitude_loss_L2'].append(magnitude_loss_L2)
                 #self.loss['angle_loss_L2'].append(angle_loss_L2)
-                #self.loss['magnitude_loss_L1_rounded'].append(magnitude_loss_L1_rounded)
-                #self.loss['angle_loss_L1_rounded'].append(angle_loss_L1_rounded)
-                #self.loss['magnitude_loss_L2_rounded'].append(magnitude_loss_L2_rounded)
-                #self.loss['angle_loss_L2_rounded'].append(angle_loss_L2_rounded)
                 
                 if i % log_nth == log_nth - 1:
                     if verbose:
@@ -163,33 +150,24 @@ class Solver(object):
                 torch.save(model.state_dict(), 'pg_models/{}_best_model.pth'.format(datetime_now))
                 best_val_loss = val_loss
 
-#             writer.add_scalars('loss_data', {'train': train_loss_L2_epoch, 'val': val_loss}, epoch)
-#             writer.add_scalars('metrics L1', {'magnitude': magnitude_loss_L1_epoch, 'angle': angle_loss_L1_epoch}, epoch)
-#             writer.add_scalars('metrics L2', {'magnitude': magnitude_loss_L2_epoch, 'angle': angle_loss_L2_epoch}, epoch)
+            #writer.add_scalars('loss_data', {'train': train_loss_L2_epoch, 'val': val_loss}, epoch)
+            #writer.add_scalars('metrics L1', {'magnitude': magnitude_loss_L1_epoch, 
+            #                                  'angle': angle_loss_L1_epoch}, epoch)
+            #writer.add_scalars('metrics L2', {'magnitude': magnitude_loss_L2_epoch, 
+            #                                  'angle': angle_loss_L2_epoch}, epoch)
 
             self.val_loss_history.append(val_loss)
             
             if verbose:
                 print('[Epoch %d/%d] train_loss: %.5f - val_loss: %.5f'
                       %(epoch + 1, num_epochs, self.loss_epoch_history['translation_loss_L2'][-1], val_loss))
-                #print('\tL1 Loss: translation:', self.loss_epoch_history['translation_loss_L1'][-1],
-                #              'rounded:', self.loss_epoch_history['translation_loss_L1_rounded'][-1])
-                #print('\tL2 Loss: translation:', self.loss_epoch_history['translation_loss_L2'][-1],
-                #              'rounded:', self.loss_epoch_history['translation_loss_L2_rounded'][-1])
-                #print('\tL1 Loss:   Magnitude:', self.loss_epoch_history['magnitude_loss_L1'][-1],
-                #                  'Angle:', self.loss_epoch_history['angle_loss_L1'][-1])
-                #print('\t  -> rounded: Magnitude:', self.loss_epoch_history['magnitude_loss_L1_rounded'][-1],
-                #                  'Angle:', self.loss_epoch_history['angle_loss_L1_rounded'][-1])
-                #print('\tL2 Loss:   Magnitude:', self.loss_epoch_history['magnitude_loss_L2'][-1],
-                #                  'Angle:', self.loss_epoch_history['angle_loss_L2'][-1])
-                #print('\t  -> rounded: Magnitude:', self.loss_epoch_history['magnitude_loss_L2_rounded'][-1],
-                #                  'Angle:', self.loss_epoch_history['angle_loss_L2_rounded'][-1])
 
         if verbose: print('FINISH.')
     
+    
     def _angles_magnitude_metric(self, predicted_translation, gt_translation, loss, rounded=False):
-        '''Calculates MSE Loss for magnitudes of translations and
-        calculates MSE Loss for rotations of translations'''
+        """Calculates loss for magnitudes of translations and for rotations of translations."""
+        
         predicted_translation = predicted_translation.view(-1, 2)
         gt_translation = gt_translation.view(-1, 2)
         
@@ -207,28 +185,19 @@ class Solver(object):
         alpha_loss = loss(alpha_predicted, alpha_gt) * 180 / np.pi
 
         return magnitude_loss, alpha_loss
-
-    def _IOU_of_resulting_shapes(self, contour, translation_pred, translation_gt, img_shape):
-        #print(translation_pred.shape, translation_gt.shape)
-        contour_pred = contour + translation_pred
-        contour_gt = contour + translation_gt
-        
-        contour_img = np.zeros((img_shape[0], img_shape[2], img_shape[3])).astype(np.uint8)
-        contour_pred = np.expand_dims(contour_pred.cpu().detach().numpy().astype(np.int32), axis=0)
-        contour_img_pred = cv2.fillPoly(contour_img, contour_pred, color=1)
-        
-        
-        contour_gt = np.expand_dims(contour_gt.cpu().detach().numpy().astype(np.int32), axis=0)
-        contour_img_gt = cv2.fillPoly(contour_img, contour_gt, color=1)
-
-        iou = iou_numpy(contour_img_pred, contour_img_gt)
-        #print(iou)
-        
-        return iou
-        
-        
     
     def _val(self, model, val_loader, loss_func, verbose=False):
+        """Validate a given model with the provided data.
+
+        Parameters
+        ----------
+        model : torch.nn.Module
+            Model object initialized from a torch.nn.Module
+        val_loader : torch.utils.data.DataLoader
+            Val data in torch.utils.data.DataLoader
+        loss_func : torch.nn Loss
+            Loss function to use
+        """
         
         model.eval()
         running_loss = 0.0
