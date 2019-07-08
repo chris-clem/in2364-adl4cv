@@ -1,3 +1,9 @@
+"""PyTorch Geometric custom dataset class for DAVIS 2016 data.
+
+The implementation is based on this tutorial: 
+https://pytorch-geometric.readthedocs.io/en/latest/notes/create_dataset.html
+"""
+
 import os
 import shutil
 import sys
@@ -16,13 +22,51 @@ from OSVOS_PyTorch.train_online import train
 
 
 class DAVIS2016(Dataset):
+    """PyTorch Geometric custom dataset class for DAVIS 2016 data."""
+    
     def __init__(self, root, 
                  annotations_folders_path, contours_folders_path, 
                  images_folders_path, translations_folders_path,
                  parent_model_path,
-                 layer, k, epochs_wo_avegrad, augmentation_count,
+                 layer, k, augmentation_count,
                  skip_sequences, train_sequences, val_sequences,
                  train=True, transform=None, pre_transform=None):
+        """Constrcutor for PyTorch Geometric custom dataset class for DAVIS 2016 data.
+
+        Parameters
+        ----------
+        root : str
+            Path to root folder where dataset is stored
+        annotations_folders_path : str
+            Path to folder where augmented DAVIS 2016 annotations are stored
+        contours_folders_path : str
+            Path to folder where computed contours are stored
+        images_folders_path : str
+            Path to folder where augmented DAVIS 2016 images are stored
+        translations_folders_path : str
+            Path to folder where computed translations are stored
+        parent_model_path : str
+            Path to trained OSVOS parent model which is used to extract OSVOS feature vectors
+        layer : int
+            Layer from which to extract OSVOS feature vector (1, 4, 9, 16 are useful values)
+        k : int
+            Number of neighbours to compute KNN graph of contour points
+        augmentation_count : str
+            Path to root folder where dataset is stored
+        skip_sequences : str
+            Path to root folder where dataset is stored
+        train_sequences : str
+            Path to root folder where dataset is stored
+        val_sequences : str
+            Path to root folder where dataset is stored
+        train : str
+            Path to root folder where dataset is stored
+        transform : str
+            Path to root folder where dataset is stored
+        pre_transform : str
+            Path to root folder where dataset is stored
+        """
+
         # Paths
         self.annotations_folders_path = annotations_folders_path
         self.contours_folders_path = contours_folders_path
@@ -37,7 +81,6 @@ class DAVIS2016(Dataset):
         # Hyperparameters
         self.layer = layer
         self.k = k
-        self.epochs_wo_avegrad = epochs_wo_avegrad
         self.augmentation_count = augmentation_count + 1
         
         # Sequences

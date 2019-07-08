@@ -1,3 +1,18 @@
+"""Gets and prints the spreadsheet's header columns
+
+Parameters
+----------
+file_loc : str
+    The file location of the spreadsheet
+print_cols : bool, optional
+    A flag used to print the columns to the console (default is False)
+
+Returns
+-------
+list
+    a list of strings representing the header columns
+"""
+
 # DAVIS Paths
 ANNOTATIONS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Annotations/480p/"
 ANNOTATIONS_AUGMENTED_FOLDERS_PATH = "DAVIS_2016/DAVIS/Annotations_augmented/"
@@ -40,20 +55,19 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
 DEBUG = 1000
 
 # Data Augmentation
-AUGMENTATION_COUNT = 100
+AUGMENTATION_COUNT = 5
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation
 CLOSING_KERNEL_SIZE = 25
 
 # Dataset Creation
-EPOCHS_WO_AVEGRAD = 200
-LAYER = 9
+LAYER = 4
 K = 32
-NUM_SEQUENCES = 1
+NUM_SEQUENCES = 5
 
 # Training parameters
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.0
-NUM_EPOCHS = 50
+NUM_EPOCHS = 20
