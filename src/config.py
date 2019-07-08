@@ -40,7 +40,7 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
 DEBUG = 1000
 
 # Data Augmentation
-AUGMENTATION_COUNT = 5
+AUGMENTATION_COUNT = 100
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation

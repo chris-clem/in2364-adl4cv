@@ -92,7 +92,11 @@ class DAVIS2016(Dataset):
 
                 # Get path to Images folder
                 annotations_folder_path = os.path.join(raw_path_annotations, sequence, j)
-
+                
+                #if augmetation does not exist continue with next
+                if not os.path.exists(annotations_folder_path):
+                    continue
+                
                 # Get list of frames
                 frames = os.listdir(annotations_folder_path)
                 if '.ipynb_checkpoints' in frames:
@@ -152,6 +156,8 @@ class DAVIS2016(Dataset):
                 translations_folder_path = os.path.join(raw_path_translations, sequence, j)
 
                 # Get list of Images (one for each frame in the sequence)
+                if not os.path.exists(images_folder_path):
+                    continue
                 frames = os.listdir(images_folder_path)
                 if '.ipynb_checkpoints' in frames:
                     frames.remove('.ipynb_checkpoints')
