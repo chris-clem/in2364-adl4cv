@@ -108,7 +108,8 @@ def create_data(contour, translation, img_path_0, img_path_1, osvos_model, k):
     img_1 = torch.from_numpy(img_1)
     
     # x: Node feature matrix with shape [num_nodes, num_node_features]
-    # The feature of each node is the OSVOS feature vector of the next frame
+    # The feature of each node are the concatenated OSVOS feature vectors of the current 
+    # and the next frame.
     x_1 = get_OSVOS_feature_vectors(contour, img_0, osvos_model)
     x_2 = get_OSVOS_feature_vectors(contour, img_1, osvos_model)
     x = torch.cat((x_1, x_2), 1)
@@ -122,17 +123,14 @@ def create_data(contour, translation, img_path_0, img_path_1, osvos_model, k):
     # The feature of each edge is the distance between the two nodes it connects
     edge_attr = get_edge_attribute(contour, edge_index)
     
-    # The target of each node is the displacement of the node between the current and the next frame
+    # Create data object
     if translation is None:
         data = Data(x=x, edge_index=edge_index, 
                     edge_attr=edge_attr, contour=contour)
     else:
-        # y: Target to train against (may have arbitrary shape)
+        # The target of each node is the displacement of the node between the current and the next frame
         y = torch.from_numpy(translation.astype(np.float64))
         data = Data(x=x, edge_index=edge_index, 
                     edge_attr=edge_attr, y=y, contour=contour)
 
-    # Create data object
-    
-    
     return data

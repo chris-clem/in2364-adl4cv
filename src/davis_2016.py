@@ -30,7 +30,7 @@ class DAVIS2016(Dataset):
                  parent_model_path,
                  layer, k, augmentation_count,
                  skip_sequences, train_sequences, val_sequences,
-                 train=True, transform=None, pre_transform=None):
+                 train=True):
         """Constrcutor for PyTorch Geometric custom dataset class for DAVIS 2016 data.
 
         Parameters
@@ -51,20 +51,16 @@ class DAVIS2016(Dataset):
             Layer from which to extract OSVOS feature vector (1, 4, 9, 16 are useful values)
         k : int
             Number of neighbours to compute KNN graph of contour points
-        augmentation_count : str
-            Path to root folder where dataset is stored
-        skip_sequences : str
-            Path to root folder where dataset is stored
-        train_sequences : str
-            Path to root folder where dataset is stored
-        val_sequences : str
-            Path to root folder where dataset is stored
-        train : str
-            Path to root folder where dataset is stored
-        transform : str
-            Path to root folder where dataset is stored
-        pre_transform : str
-            Path to root folder where dataset is stored
+        augmentation_count : int
+            Number of augmentations
+        skip_sequences : list
+            List of sequences to skip
+        train_sequences : list
+            List of DAVIS 2016 train sequences
+        val_sequences : list
+            List of DAVIS 2016 val sequences
+        train : bool
+            Flag to indicate whether dataset is for train or val
         """
 
         # Paths
@@ -96,10 +92,14 @@ class DAVIS2016(Dataset):
         
     @property
     def raw_file_names(self):
+        """List of files in root/raw dir which needs to be found in order to skip the download."""
+        
         raw_file_names = ['Annotations', 'Contours', 'Images', 'Translations']
         return raw_file_names
     
     def download(self):
+        """Moves raw data from DAVIS 2016 folder to root/raw."""
+        
         print('Downloading...')
         
         for raw_file_name, davis_path in zip(self.raw_file_names, self.davis_paths):
@@ -108,6 +108,7 @@ class DAVIS2016(Dataset):
          
     @property
     def processed_file_names(self):
+        """List of files in root/processed which needs to be found in order to skip the processing."""
         
         processed_file_names = []
         
@@ -133,10 +134,10 @@ class DAVIS2016(Dataset):
 
                 j = str(j)
 
-                # Get path to Images folder
+                # Get path to annotion folder
                 annotations_folder_path = os.path.join(raw_path_annotations, sequence, j)
                 
-                #if augmetation does not exist continue with next
+                # If augmetation does not exist continue with next
                 if not os.path.exists(annotations_folder_path):
                     continue
                 
@@ -152,6 +153,7 @@ class DAVIS2016(Dataset):
                     if k > cfg.DEBUG: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     
+                    # Skip these sequences as annotations are completely black
                     if (sequence == 'bmx-bumps' and frame == '00059.png'): break
                     if (sequence == 'surf' and frame == '00053.png'): break
 
@@ -163,7 +165,21 @@ class DAVIS2016(Dataset):
         return len(self.processed_file_names)
     
     def process(self):
-        # Get paths to Contours, Images, and Translations
+        """Processes raw data and saves it into root/processed.
+        
+        For each frame, a torch_geometric.data object is created that consists of:
+        * x: Node feature matrix of shape [num_nodes, num_node_features]. The feature 
+             of each node are the concatenated OSVOS feature vectors of the current 
+             and the next frame.
+        * edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
+                      Each node should be connected to its K nearest neighbours
+        * edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
+                     The feature of each edge is the distance between the two nodes it connects
+        * y: The target of each node is the displacement of the node between the current and the next frame
+             
+        """
+        
+        # Get paths to Annotations, Contours, Images, and Translations
         raw_path_annotations, raw_path_contours, raw_path_images, raw_path_translations = self.raw_paths
         
         # Create OSVOS model for feature vector extraction
@@ -173,6 +189,7 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
+            # Debugging
             if i > cfg.DEBUG: break
             
             # Skip sequence if needed
@@ -193,7 +210,7 @@ class DAVIS2016(Dataset):
 
                 print('\t{} #{}'.format('Augmentation', j))   
             
-                # Get paths to current sequence in Contours and Translations folders
+                # Get paths to current sequence in Contours, Images, and Translations folders
                 contours_folder_path = os.path.join(raw_path_contours, sequence, j)
                 images_folder_path = os.path.join(raw_path_images, sequence, j)
                 translations_folder_path = os.path.join(raw_path_translations, sequence, j)
@@ -211,9 +228,11 @@ class DAVIS2016(Dataset):
 
                     file = os.path.splitext(frame)[0] + '.npy'
 
+                    # Debugging
                     if k > cfg.DEBUG: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     
+                    # Skip these sequences as annotations are completely black
                     if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
                     if (sequence == 'surf' and frame == '00053.jpg'): break
 
@@ -226,7 +245,7 @@ class DAVIS2016(Dataset):
                     translation_path = os.path.join(translations_folder_path, file)
                     translation = np.load(translation_path)
 
-                    # Get image path of current frame and following
+                    # Get image path to current and next frame
                     image_path_0 = os.path.join(images_folder_path, frames[k][:5] + '.jpg')
                     image_path_1 = os.path.join(images_folder_path, frames[k+1][:5] + '.jpg')
 
@@ -238,15 +257,12 @@ class DAVIS2016(Dataset):
 
                     data = create_data(contour, translation, image_path_0, image_path_1, new_model, self.k)
 
-                    if self.pre_filter is not None and not self.pre_filter(data):
-                        continue
-
-                    if self.pre_transform is not None:
-                        data = self.pre_transform(data)
-
+                    # Save data
                     torch.save(data, data_path)
 
     def get(self, idx):
+        """Load a single data object at given index."""
+        
         file_name = self.processed_file_names[idx]
         data_path = os.path.join(self.processed_dir, file_name)
         data = torch.load(data_path)
