@@ -88,7 +88,7 @@ class DAVIS2016(Dataset):
         
         self.train = train
         
-        super(DAVIS2016, self).__init__(root, transform, pre_transform)
+        super(DAVIS2016, self).__init__(root, transform=None, pre_transform=None)
         
     @property
     def raw_file_names(self):
@@ -171,12 +171,11 @@ class DAVIS2016(Dataset):
         * x: Node feature matrix of shape [num_nodes, num_node_features]. The feature 
              of each node are the concatenated OSVOS feature vectors of the current 
              and the next frame.
-        * edge_index: Graph connectivity in COO format with shape [2, num_edges] and type torch.long
+        * edge_index: Graph connectivity in COO format of shape (2, num_edges) and type torch.long
                       Each node should be connected to its K nearest neighbours
         * edge_attr: Edge feature matrix with shape [num_edges, num_edge_features]
                      The feature of each edge is the distance between the two nodes it connects
         * y: The target of each node is the displacement of the node between the current and the next frame
-             
         """
         
         # Get paths to Annotations, Contours, Images, and Translations
