@@ -16,6 +16,7 @@ class GCN(torch.nn.Module):
         self.conv1 = GCNConv(in_channels, in_channels * 2)
         self.conv2 = GCNConv(in_channels * 2, in_channels * 2)
         self.conv3 = GCNConv(in_channels * 2, in_channels * 4)
+        self.conv4 = GCNConv(in_channels * 4, in_channels * 4)
         
         self.lin1 = Linear(in_channels * 4, in_channels * 2)
         self.lin2 = Linear(in_channels * 2, in_channels)
@@ -33,6 +34,10 @@ class GCN(torch.nn.Module):
         x = F.dropout(x, training=self.training)
         
         x = self.conv3(x, edge_index)
+        x = F.relu(x)
+        x = F.dropout(x, training=self.training)
+        
+        x = self.conv4(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
 

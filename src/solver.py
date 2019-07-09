@@ -12,6 +12,9 @@ from torch.nn import MSELoss, L1Loss
 from torch.autograd import Variable
 import cv2
 
+import src.config as cfg
+
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
@@ -89,6 +92,7 @@ class Solver(object):
         writer = SummaryWriter(logdir=log_dir, comment='train')
 
         if verbose: print('START TRAIN.')
+
         start_time = timeit.default_timer()
         datetime_now = datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
         
@@ -147,7 +151,12 @@ class Solver(object):
             val_loss = self._val(model, val_loader, self.L2_loss)
             
             if val_loss < best_val_loss:
-                torch.save(model.state_dict(), 'pg_models/{}_best_model.pth'.format(datetime_now))
+                model_name = '{}_{}_{}_{}_{}_{}_best_model.pth'.format(datetime_now,
+                                                                       cfg.AUGMENTATION_COUNT,
+                                                                       cfg.LAYER, cfg.K, cfg.NUM_SEQUENCES,
+                                                                       cfg.LEARNING_RATE)
+                model_path = os.path.join('pg_models', model_name)
+                torch.save(model.state_dict(), model_path)
                 best_val_loss = val_loss
 
             #writer.add_scalars('loss_data', {'train': train_loss_L2_epoch, 'val': val_loss}, epoch)
