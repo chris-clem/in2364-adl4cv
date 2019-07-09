@@ -15,8 +15,7 @@ from torch_geometric.nn import EdgeConv
 def MLP(channels, batch_norm=True):
     return Seq(*[
         Seq(Lin(channels[i - 1], channels[i]), ReLU(), BN(channels[i]))
-        for i in range(1, len(channels))
-])
+        for i in range(1, len(channels))])
 
 
 # from https://github.com/rusty1s/pytorch_geometric/blob/master/torch_geometric/nn/conv/edge_conv.py
@@ -32,8 +31,7 @@ class DynamicEdgeConv(EdgeConv):
         return super(DynamicEdgeConv, self).forward(x, edge_index)
 
     def __repr__(self):
-        return '{}(nn={}, k={})'.format(self.__class__.__name__, self.nn,
-self.k)
+        return '{}(nn={}, k={})'.format(self.__class__.__name__, self.nn, self.k)
     
     
 class DynamicEdge(torch.nn.Module):

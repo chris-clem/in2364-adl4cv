@@ -117,6 +117,7 @@ class DAVIS2016(Dataset):
         # Iterate through sequences 
         for i, sequence in enumerate(self.sequences):
             
+            # Debugging
             if i > cfg.DEBUG: break
             
             # Skip sequence if needed
@@ -149,6 +150,7 @@ class DAVIS2016(Dataset):
                 # Iterate through frames
                 for k, frame in enumerate(frames[:-1]):
 
+                    # Debugging
                     if k > cfg.DEBUG: break
                     #print('\t\t#{}: {}'.format(k, frame))
                     

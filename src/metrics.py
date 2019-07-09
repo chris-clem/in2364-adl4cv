@@ -1,9 +1,14 @@
+"""Functions for evaluating the performance on the DAVIS challenge.
+
+Copied from: https://github.com/davisvideochallenge/davis/tree/master/python/lib/davis/measures
+"""
+
 import numpy as np
 
 import sys
 import numpy as np
 import scipy.spatial.distance as ssd
-#from tstab import *
+
 
 def db_eval_boundary(foreground_mask,gt_mask,bound_th=0.008):
 	"""
@@ -63,6 +68,7 @@ def db_eval_boundary(foreground_mask,gt_mask,bound_th=0.008):
 		F = 2*precision*recall/(precision+recall);
 
 	return F
+
 
 def seg2bmap(seg,width=None,height=None):
 	"""
@@ -130,6 +136,7 @@ def get_bijective_pairs(pairs,costmat):
 	bij_pairs = bij_pairs_one_dim(bij_pairs, costmat.T,1)
 	return bij_pairs
 
+
 def bij_pairs_one_dim(pairs, costmat, left_or_right):
 
 	bij_pairs = []
@@ -142,6 +149,7 @@ def bij_pairs_one_dim(pairs, costmat, left_or_right):
 		bij_pairs.append(curr_pairs[b])
 
 	return np.array(bij_pairs)
+
 
 def hist_cost_2(BH1,BH2):
 
@@ -157,6 +165,7 @@ def hist_cost_2(BH1,BH2):
 	HC = 0.5*np.sum((tmp1-tmp2)**2/(tmp1+tmp2+eps),axis=2)
 
 	return HC
+
 
 def sc_compute(Bsamp,Tsamp,mean_dist,nbins_theta,nbins_r,r_inner,r_outer,out_vec):
 	in_vec = (out_vec==0).ravel()
@@ -208,6 +217,7 @@ def sc_compute(Bsamp,Tsamp,mean_dist,nbins_theta,nbins_r,r_inner,r_outer,out_vec
 		BH[n,:] = Sn.T[:].ravel()
 
 	return BH.astype(np.int),mean_dist
+
 
 def db_eval_t_stab(fgmask,ground_truth,timing=True):
 	"""
@@ -286,7 +296,7 @@ def db_eval_iou(annotation,segmentation):
 	Return:
 		jaccard (float): region similarity
 
- """
+     """
 
 	annotation   = annotation.astype(np.bool)
 	segmentation = segmentation.astype(np.bool)
