@@ -13,7 +13,7 @@ def close_image(image, closing_kernel_size):
     image : ndarray
         Array containing the image
     closing_kernel_size : int
-        Size of the closing kernel
+        Size of closing kernel
 
     Returns
     -------
@@ -81,7 +81,7 @@ def extract_longest_contour(image, closing_kernel_size, method):
     image : ndarray
         Array containing the image from which contour should be extracted
     closing_kernel_size : int
-        Size of the closing kernel
+        Size of closing kernel
     method : cv2 constant
         Can either be CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, CHAIN_APPROX_TC89_L1, 
         CHAIN_APPROX_TC89_KCOS. Depending on the method, a different number of points

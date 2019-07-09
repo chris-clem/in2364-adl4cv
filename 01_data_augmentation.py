@@ -1,4 +1,4 @@
-"""First step of our pipeline: augment DAVIS images.
+"""First step of our approach: augment DAVIS images.
 
 Augmentations cannot happen on the fly as for each image, the contour needs to be extracted,
 the translations computed, and then for each contour point the OSVOS feature vectors extracted.
@@ -106,7 +106,7 @@ def augment_data(annotations_folders_path, images_folders_path,
     Parameters
     ----------
     annotations_folders_path : str
-        Path to DAVIS augmentations
+        Path to DAVIS annotations
     images_folders_path : str
         Path to DAVIS images
     annotations_augmented_folders_path : str
