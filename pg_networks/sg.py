@@ -1,3 +1,9 @@
+"""Class for a PyTorch Geometric SG network from the paper
+Simplifying Graph Convolutional Networks
+https://arxiv.org/abs/1902.07153
+"""
+
+
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F

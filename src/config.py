@@ -40,20 +40,19 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
 DEBUG = 1000
 
 # Data Augmentation
-AUGMENTATION_COUNT = 100
+AUGMENTATION_COUNT = 10
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation
 CLOSING_KERNEL_SIZE = 25
 
 # Dataset Creation
-EPOCHS_WO_AVEGRAD = 200
-LAYER = 9
+LAYER = 1
 K = 32
-NUM_SEQUENCES = 1
+NUM_SEQUENCES = 10
 
 # Training parameters
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.0
-NUM_EPOCHS = 50
+NUM_EPOCHS = 20

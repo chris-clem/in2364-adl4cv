@@ -1,3 +1,9 @@
+"""First step of our approach: augment DAVIS images.
+
+Augmentations cannot happen on the fly as for each image, the contour needs to be extracted,
+the translations computed, and then for each contour point the OSVOS feature vectors extracted.
+"""
+
 import os
 import random
 
@@ -9,6 +15,7 @@ import scipy.misc
 
 import src.config as cfg
 
+# OSVOS like augmentations
 class RandomHorizontalFlip(object):
     """Horizontally flip the given image and ground truth randomly with a probability of 0.5."""
 
@@ -23,7 +30,7 @@ class RandomHorizontalFlip(object):
                 sample[elem] = tmp
 
         return sample
-
+    
 class ScaleNRotate(object):
     """Scale (zoom-in, zoom-out) and Rotate the image and the ground truth."""
     
@@ -50,8 +57,25 @@ class ScaleNRotate(object):
 
         return sample
 
+
 def save_sample(sample, frame, augmentation_count,
-                annotations_augmented_folders_path, images_augmented_folders_path):
+                annotations_augmented_folders_path, 
+                images_augmented_folders_path):
+    """Save sample (image annotation pair).
+    
+    Parameters
+    ----------
+    sample : dict
+        Dict containing image and annotation
+    frame : str
+        Name of the sample
+    augmentation_count : int
+        Index of the augmentation (0 for original sample)
+    annotations_augmented_folders_path : str
+        Path to where augmented annotation should be stored
+    images_augmented_folders_path : str
+        Path to where augmented images should be stored
+    """
     
     # Save image
     file_name_img = '{}.jpg'.format(frame[:5])
@@ -77,8 +101,25 @@ def save_sample(sample, frame, augmentation_count,
 def augment_data(annotations_folders_path, images_folders_path,
                  annotations_augmented_folders_path, images_augmented_folders_path,
                  meanval, augmentation_count):
+    """Augment DAVIS data (augmentations and images) using rotations and scales.
+    
+    Parameters
+    ----------
+    annotations_folders_path : str
+        Path to DAVIS annotations
+    images_folders_path : str
+        Path to DAVIS images
+    annotations_augmented_folders_path : str
+        Path to where augmented annotation should be stored
+    images_augmented_folders_path : str
+        Path to where augmented images should be stored
+    meanval : tuple
+        Mean value for image normalization
+    augmentation_count : int
+        Number of augmentations to create
+    """
 
-    # Augmentations
+    # Create augmentation_count augmentations
     randoms = []
     random_rots = []
     random_scales = []
@@ -106,7 +147,7 @@ def augment_data(annotations_folders_path, images_folders_path,
     # Iterate through sequences
     for i, sequence in enumerate(sequences):
 
-        # Debug
+        # Debugging
         if (i > cfg.DEBUG): break
 
         print('#{}: {}'.format(i, sequence))
@@ -126,14 +167,16 @@ def augment_data(annotations_folders_path, images_folders_path,
             frames.remove('.ipynb_checkpoints')
         frames.sort()
         
-        augmentation_blacklist = []        
+        augmentation_blacklist = []
+        
         # Iterate through frames
         for j, frame in enumerate(frames):
 
-            # Debug
+            # Debugging
             if (j > cfg.DEBUG): break
             #print('\t#{}: {}'.format(j, frame))
             
+            # Skip these sequences as annotations are completely black
             if (sequence == 'bmx-bumps' and frame == '00059.jpg'): break
             if (sequence == 'surf' and frame == '00053.jpg'): break
                 
@@ -156,7 +199,7 @@ def augment_data(annotations_folders_path, images_folders_path,
             save_sample(sample, frame, '0',
                         annotations_aug_folder_path, images_aug_folder_path)
             
-            # If val sequence, don't augment
+            # If val sequence, do not augment
             if sequence not in cfg.TRAIN_SEQUENCES: continue
             
             # Apply augmentations and save them
@@ -175,6 +218,8 @@ def augment_data(annotations_folders_path, images_folders_path,
                     save_sample(sample, frame, str(k+1),
                                 annotations_aug_folder_path, images_aug_folder_path)
 
-augment_data(cfg.ANNOTATIONS_FOLDERS_PATH, cfg.IMAGES_FOLDERS_PATH,
-             cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, cfg.IMAGES_AUGMENTED_FOLDERS_PATH,
-             cfg.MEANVAL, cfg.AUGMENTATION_COUNT)
+
+if __name__ == "__main__":                    
+    augment_data(cfg.ANNOTATIONS_FOLDERS_PATH, cfg.IMAGES_FOLDERS_PATH,
+                 cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, cfg.IMAGES_AUGMENTED_FOLDERS_PATH,
+                 cfg.MEANVAL, cfg.AUGMENTATION_COUNT)

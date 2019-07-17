@@ -1,8 +1,13 @@
+"""Class for a PyTorch Geometric GCN network from the paper
+Semi-Supervised Classification with Graph Convolutional Networks
+https://arxiv.org/abs/1609.02907
+"""
+
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
-
 from torch_geometric.nn import GCNConv
+
 
 class GCN(torch.nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -31,11 +36,11 @@ class GCN(torch.nn.Module):
         x = self.conv3(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
-
+        
         x = self.conv4(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
-        
+
         x = self.lin1(x)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
