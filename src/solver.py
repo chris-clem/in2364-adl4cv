@@ -77,6 +77,7 @@ class Solver(object):
         - num_epochs: total number of training epochs
         - log_nth: log training accuracy and loss every nth iteration
         """
+        patience, patience_counter = 5, 0
         optimizer = self.optimizer(model.parameters(), **self.optim_args)
         self._reset_histories()
         iter_per_epoch = len(train_loader)
@@ -99,10 +100,12 @@ class Solver(object):
         
         for epoch in range(num_epochs):
             running_loss = 0.0
+            if patience_counter >= patience:
+                break
             for i, data in enumerate(train_loader):
-                
+                if i%10 == 0:
+                    print(i, '/', len(train_loader))
                 data = data.to(device)
-                
                 # zero the parameter gradients
                 optimizer.zero_grad()
 
@@ -160,8 +163,11 @@ class Solver(object):
             val_loss = self._val(model, val_loader, self.L2_loss)
             
             if val_loss < best_val_loss:
+                patience_counter = 0
                 torch.save(model.state_dict(), 'pg_models/{}_best_model.pth'.format(datetime_now))
                 best_val_loss = val_loss
+            else:
+                patience_counter += 1
 
 #             writer.add_scalars('loss_data', {'train': train_loss_L2_epoch, 'val': val_loss}, epoch)
 #             writer.add_scalars('metrics L1', {'magnitude': magnitude_loss_L1_epoch, 'angle': angle_loss_L1_epoch}, epoch)

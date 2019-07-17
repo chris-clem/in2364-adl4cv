@@ -66,71 +66,55 @@ class DAVIS2016(Dataset):
     @property
     def processed_file_names(self):
         
-#         processed_file_names = []
+        processed_file_names = []
         
-#         # Get path to Annotations
-#         raw_path_annotations = self.raw_paths[0]
+        # Get path to Annotations
+        raw_path_annotations = self.raw_paths[0]
         
-#         # Iterate through sequences 
-#         for i, sequence in enumerate(self.sequences):
+        # Iterate through sequences 
+        for i, sequence in enumerate(self.sequences):
             
-#             if i > cfg.DEBUG: break
+            if i > cfg.DEBUG: break
             
-#             # Skip sequence if needed
-#             if (sequence in self.skip_sequences): continue
+            # Skip sequence if needed
+            if (sequence in self.skip_sequences): continue
                 
-#             # Train or val dataset
-#             if self.train:
-#                 if (sequence in self.val_sequences): continue
-#             else:
-#                 if (sequence in self.train_sequences): continue
+            # Train or val dataset
+            if self.train:
+                if (sequence in self.val_sequences): continue
+            else:
+                if (sequence in self.train_sequences): continue
                     
-#             # Iterate through augmentations:
-#             for j in range(self.augmentation_count):
+            # Iterate through augmentations:
+            for j in range(self.augmentation_count):
 
-#                 j = str(j)
+                j = str(j)
 
-#                 # Get path to Images folder
-#                 annotations_folder_path = os.path.join(raw_path_annotations, sequence, j)
+                # Get path to Images folder
+                annotations_folder_path = os.path.join(raw_path_annotations, sequence, j)
                 
-#                 #if augmetation does not exist continue with next
-#                 if not os.path.exists(annotations_folder_path):
-#                     continue
+                #if augmetation does not exist continue with next
+                if not os.path.exists(annotations_folder_path):
+                    continue
                 
-#                 # Get list of frames
-#                 frames = os.listdir(annotations_folder_path)
-#                 if '.ipynb_checkpoints' in frames:
-#                     frames.remove('.ipynb_checkpoints')
-#                 frames.sort()
+                # Get list of frames
+                frames = os.listdir(annotations_folder_path)
+                if '.ipynb_checkpoints' in frames:
+                    frames.remove('.ipynb_checkpoints')
+                frames.sort()
 
-#                 # Iterate through frames
-#                 for k, frame in enumerate(frames[:-1]):
+                # Iterate through frames
+                for k, frame in enumerate(frames[:-1]):
 
-#                     if k > cfg.DEBUG: break
-#                     #print('\t\t#{}: {}'.format(k, frame))
+                    if k > cfg.DEBUG: break
+                    #print('\t\t#{}: {}'.format(k, frame))
                     
-#                     if (sequence == 'bmx-bumps' and frame == '00059.png'): break
-#                     if (sequence == 'surf' and frame == '00053.png'): break
+                    if (sequence == 'bmx-bumps' and frame == '00059.png'): break
+                    if (sequence == 'surf' and frame == '00053.png'): break
 
-#                     processed_file_names.append('{}_{}_{}.pt'.format(sequence, j, frame[:5]))
+                    processed_file_names.append('{}_{}_{}.pt'.format(sequence, j, frame[:5]))
         
-#        return processed_file_names
-        processed_file_names = os.listdir('pg_datasets/DAVIS_2016/processed')
-        if self.train:
-            final_processed_file_names = []
-            for i in processed_file_names:
-                sequence = i.split("_")[0]
-                if sequence in self.train_sequences:
-                    final_processed_file_names.append(i)
-        else:
-            final_processed_file_names = []
-            for i in processed_file_names:
-                sequence = i.split("_")[0]
-                if sequence in self.val_sequences:
-                    final_processed_file_names.append(i)
-        return final_processed_file_names
-            
-
+        return processed_file_names
     
     def __len__(self):
         return len(self.processed_file_names)
@@ -192,20 +176,18 @@ class DAVIS2016(Dataset):
 
                     # Load corresponding contour
                     contour_path = os.path.join(contours_folder_path, file)
-                    if not os.path.exists(contour_path):
-                        break
                     contour = np.load(contour_path)
                     contour = np.squeeze(contour)
 
                     # Load corresponding translation
                     translation_path = os.path.join(translations_folder_path, file)
-                    if not os.path.exists(translation_path):
-                       break
-                    translation = np.load(translation_path)
+                    
+		translation = np.load(translation_path)
 
                     # Get image path of current frame and following
                     image_path_0 = os.path.join(images_folder_path, frames[k][:5] + '.jpg')
                     image_path_1 = os.path.join(images_folder_path, frames[k+1][:5] + '.jpg')
+
                     # Get data
                     data_name = '{}_{}_{}.pt'.format(sequence, j, frame[:5])
                     data_path = os.path.join(self.processed_dir, data_name)
@@ -225,8 +207,5 @@ class DAVIS2016(Dataset):
     def get(self, idx):
         file_name = self.processed_file_names[idx]
         data_path = os.path.join(self.processed_dir, file_name)
-        if os.path.exists(data_path):
-            data = torch.load(data_path)
-            return data
-        else:
-            return None
+        data = torch.load(data_path)
+        return data
