@@ -1,4 +1,18 @@
-"""Fith step of our approach: test our predictions using val sequences."""
+"""Fith step of our approach: test our predictions using val sequences.
+
+Testing means DAVIS challenge mode is on! Given the ground truth annotation of the first frame,
+we need to predict all following annotations.
+
+The testing steps include:
+1. If first frame, extract contour from ground truth annotation
+2. Create PyTorch Geometric data object 
+3. Predict translation using the trained model
+4. Compute predicted contour
+5. Load OSVOS result
+6. Combine our result with OSVOS result
+7. Compute metrics
+8. Extract contour from combo result
+"""
 
 import os
 
@@ -21,10 +35,10 @@ def testing(simple_contour_prediction=False, save_results=False):
     mean_Fs_osvos = []
 
     # Iterate through val sequences
-    for i, sequence in enumerate(cfg.VAL_SEQUENCES):
+    for i, sequence in enumerate(cfg.VAL_SEQUENCES[1:]):
 
         # Debugging
-        if i > 4: break
+        # if i > 4: break
         print('#{}: {}'.format(i, sequence))
 
         # Get path to images and annotations
@@ -112,7 +126,7 @@ def testing(simple_contour_prediction=False, save_results=False):
             Fs_combo.append(F_combo)
             Fs_osvos.append(F_osvos)
             
-            #if combo image completely dark we lost object and cannot recover
+            # If combo image completely dark we lost object and cannot recover
             if np.sum(combo_img_1) == 0:
                 print('{} {} Combo image completely dark'.format(sequence, frame[:5]))
                 break
@@ -154,7 +168,7 @@ if __name__ == "__main__":
     osvos_model = create_osvos_model(cfg.PARENT_MODEL_PATH, cfg.LAYER)
     
     # Load GCN model to get predictions
-    model_path = 'pg_models/2019-07-09_12_37_18_best_model.pth'
+    model_path = 'pg_models/2019-07-09_18_28_01_50_1_32_10_1e-05_best_model.pth'
     model = GCN(128, 2)
     model.load_state_dict(torch.load(model_path))
     model.eval()

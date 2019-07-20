@@ -5,6 +5,7 @@ from torch_geometric.data import DataLoader
 from pg_networks.gcn import GCN
 import src.config as cfg
 from src.davis_2016 import DAVIS2016
+from src.solver import Solver
 
 
 if __name__ == "__main__": 

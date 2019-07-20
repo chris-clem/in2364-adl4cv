@@ -24,7 +24,7 @@ lk_params = dict( winSize  = (15,15),
                   criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
 
-def get_normalized_translations(contour_0, contour_1):
+def get_translations(contour_0, contour_1):
     """Computes translation between contour_0 and contour_1 and normalizes it.
     
     If there is only one contour point, return break_it flag
@@ -50,12 +50,7 @@ def get_normalized_translations(contour_0, contour_1):
     
     translations = contour_1 - contour_0
     
-    if translations.ndim > 1:
-        translations = normalize(translations)
-    else:
-        break_it = True
-    
-    return translations, break_it
+    return translations
 
 
 def save_annotation_with_contour_and_translation(annotation, contour, translation, path):
@@ -212,10 +207,10 @@ def create_contours_and_translations(annotations_folders_path, contours_folders_
                     if (sequence == 'surf' and frame == '00053.png'): break
 
                     # Get path to frames
-                    annotation_0_path = os.path.join(annotations_folders_path, sequence, j, frame)
+                    annotation_0_path = os.path.join(annotations_folders_path, sequence, j, frames[0])
                     try:
                         annotation_1_path = os.path.join(annotations_folders_path, sequence, j, frames[k+1])
-                    # Break if frame_0 is last frame
+                    # Break if last frame
                     except IndexError as e:
                         break
 
@@ -235,14 +230,12 @@ def create_contours_and_translations(annotations_folders_path, contours_folders_
                     # Compute translation between contour_0 and contour_1. Normalize it as translation
                     # sometimes is really long.
                     # If translation contains just one point break and stop for this augmentation
-                    translation_0_1_normalized, break_it = get_normalized_translations(contour_0, contour_1)
-                    if break_it == True:
-                        break
+                    translation_0_1 = get_translations(contour_0, contour_1)
                     
                     # Update contour_1 using contour_0 + normalized translations. Note that contour_1 does
                     # not necessarily lie on the real contour, which is why we project the points of
                     # contour_1 on real contour_1 in the next steps.
-                    contour_1 = np.add(np.squeeze(contour_0), translation_0_1_normalized)
+                    contour_1 = np.add(np.squeeze(contour_0), translation_0_1)
                     contour_1 = np.expand_dims(contour_1, axis=1)
 
                     # Extract real contour_1

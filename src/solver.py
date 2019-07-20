@@ -153,7 +153,7 @@ class Solver(object):
             if val_loss < best_val_loss:
                 model_name = '{}_{}_{}_{}_{}_{}_best_model.pth'.format(datetime_now,
                                                                        cfg.AUGMENTATION_COUNT,
-                                                                       cfg.LAYER, cfg.K, cfg.NUM_SEQUENCES,
+                                                                       cfg.LAYER, cfg.K, cfg.NUM_TRAIN_SEQUENCES,
                                                                        cfg.LEARNING_RATE)
                 model_path = os.path.join('pg_models', model_name)
                 torch.save(model.state_dict(), model_path)

@@ -14,7 +14,8 @@ TRANSLATIONS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Translations/"
 PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH = 'pg_datasets/DAVIS_2016'
 
 # Results Paths
-OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_OSVOS_Tim/'
+#OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_OSVOS_Tim/'
+OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_parent_model'
 COMBO_RESULTS_FOLDERS_PATH = 'evaluations/'
 
 PARENT_MODEL_PATH = 'OSVOS_PyTorch/models/parent_epoch-239.pth'
@@ -40,7 +41,7 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
 DEBUG = 1000
 
 # Data Augmentation
-AUGMENTATION_COUNT = 10
+AUGMENTATION_COUNT = 0
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation
@@ -49,7 +50,8 @@ CLOSING_KERNEL_SIZE = 25
 # Dataset Creation
 LAYER = 1
 K = 32
-NUM_SEQUENCES = 10
+NUM_TRAIN_SEQUENCES = 5
+NUM_VAL_SEQUENCES = 5
 
 # Training parameters
 BATCH_SIZE = 32
