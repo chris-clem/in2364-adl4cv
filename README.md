@@ -1,5 +1,5 @@
 # One Shot Video Object Segmentation with GCN-based contour propagation
-
+![Poster](poster.png)
 
 ## Repository Structure
 - **download_DAVIS_2016.sh**: Downloads DAVIS 2016 dataset and saves it to **DAVIS_2016**
