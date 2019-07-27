@@ -1,6 +1,6 @@
 """First step of our approach: augment DAVIS images.
 
-Augmentations cannot happen on the fly as for each image, the contour needs to be extracted,
+Augmentations cannot happen on the fly as for each image the contour needs to be extracted,
 the translations computed, and then for each contour point the OSVOS feature vectors extracted.
 """
 
@@ -123,8 +123,8 @@ def augment_data(annotations_folders_path, images_folders_path,
     randoms = []
     random_rots = []
     random_scales = []
-    rots=(-30, 30)
-    scales=(.75, 1.25)
+    rots=(-15, 15)
+    scales=(.85, 1.15)
     
     for i in range(augmentation_count):
         randoms.append(random.random())

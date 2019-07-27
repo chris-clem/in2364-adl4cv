@@ -23,7 +23,7 @@ from dataloaders import davis_2016 as db
 from dataloaders import custom_transforms as tr
 from dataloaders.helpers import *
 
-from util import visualize as viz
+#from util import visualize as viz
 import scipy.misc as sm
 import networks.vgg_osvos as vo
 from layers.osvos_layers import class_balanced_cross_entropy_loss
