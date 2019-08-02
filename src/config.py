@@ -1,3 +1,5 @@
+"""Config file for Constants and Parameters"""
+
 # DAVIS Paths
 ANNOTATIONS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Annotations/480p/"
 ANNOTATIONS_AUGMENTED_FOLDERS_PATH = "DAVIS_2016/DAVIS/Annotations_augmented/"
@@ -14,11 +16,11 @@ TRANSLATIONS_FOLDERS_PATH = "DAVIS_2016/DAVIS/Translations/"
 PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH = 'pg_datasets/DAVIS_2016'
 
 # Results Paths
+PARENT_MODEL_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_parent_model'
 OSVOS_RESULTS_FOLDERS_PATH = 'OSVOS_PyTorch/models/Results_OSVOS_Tim/'
 COMBO_RESULTS_FOLDERS_PATH = 'evaluations/'
 
 PARENT_MODEL_PATH = 'OSVOS_PyTorch/models/parent_epoch-239.pth'
-PARENT_MODEL_RESULTS_PATH = 'OSVOS_PyTorch/models/Results_parent_model'
 
 # Sequences
 SKIP_SEQUENCES = []
@@ -40,19 +42,24 @@ VAL_SEQUENCES = ['blackswan', 'bmx-trees', 'breakdance', 'camel', 'car-roundabou
 DEBUG = 1000
 
 # Data Augmentation
-AUGMENTATION_COUNT = 10
+AUGMENTATION_COUNT = 0
 MEANVAL = (104.00699, 116.66877, 122.67892)
 
 # Contour and Translation Creation
 CLOSING_KERNEL_SIZE = 25
 
 # Dataset Creation
-LAYER = 1
+LAYER = 16
 K = 32
-NUM_SEQUENCES = 10
+NUM_TRAIN_SEQUENCES = 10
+NUM_VAL_SEQUENCES = 10
 
 # Training parameters
-BATCH_SIZE = 32
+BATCH_SIZE = 8
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.0
 NUM_EPOCHS = 20
+
+# Testing
+USE_PARENT_MODEL_RESULTS = True
+BEST_MODEL = 'pg_models/2019-08-01_16:37:49_10_16_32_30_20_1e-05_0.0_best_model.pth'

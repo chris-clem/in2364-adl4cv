@@ -4,13 +4,14 @@ from datetime import datetime
 import os
 import timeit
 
+import cv2
 import numpy as np
 from tensorboardX import SummaryWriter
 import torch
 from torch.optim import Adam
 from torch.nn import MSELoss, L1Loss
 from torch.autograd import Variable
-import cv2
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import src.config as cfg
 
@@ -78,8 +79,12 @@ class Solver(object):
         """
 
         patience, patience_counter = 5, 0
+        
         optimizer = self.optimizer(model.parameters(), **self.optim_args)
         self._reset_histories()
+        
+        scheduler = ReduceLROnPlateau(optimizer, mode='min', 
+                                      factor=0.1, patience=10, verbose=False)
 
         model.double()
         model.to(device)
@@ -95,17 +100,17 @@ class Solver(object):
         if verbose: print('START TRAIN.')
 
         start_time = timeit.default_timer()
-        datetime_now = datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
+        datetime_now = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         
         best_val_loss = 1e10
         
         for epoch in range(num_epochs):
             running_loss = 0.0
+            
             if patience_counter >= patience:
                 break
+            
             for i, data in enumerate(train_loader):
-                if i%10 == 0:
-                    print(i, '/', len(train_loader))
                 data = data.to(device)
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -153,13 +158,17 @@ class Solver(object):
 
             val_loss = self._val(model, val_loader, self.L2_loss)
             
+            scheduler.step(val_loss)
+            
             if val_loss < best_val_loss:
                 patience_counter = 0
-                torch.save(model.state_dict(), 'pg_models/{}_best_model.pth'.format(datetime_now))
-                model_name = '{}_{}_{}_{}_{}_{}_best_model.pth'.format(datetime_now,
+                model_name = '{}_{}_{}_{}_{}_{}_{}_{}_best_model.pth'.format(datetime_now,
                                                                        cfg.AUGMENTATION_COUNT,
-                                                                       cfg.LAYER, cfg.K, cfg.NUM_SEQUENCES,
-                                                                       cfg.LEARNING_RATE)
+                                                                       cfg.LAYER, cfg.K, 
+                                                                       cfg.NUM_TRAIN_SEQUENCES, 
+                                                                       cfg.NUM_VAL_SEQUENCES,
+                                                                       cfg.LEARNING_RATE,
+                                                                       cfg.WEIGHT_DECAY)
                 model_path = os.path.join('pg_models', model_name)
                 torch.save(model.state_dict(), model_path)
                 best_val_loss = val_loss

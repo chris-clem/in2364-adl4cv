@@ -9,7 +9,8 @@ from src.davis_2016 import DAVIS2016
 
 if __name__ == "__main__": 
     train = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH,
-                      cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, cfg.CONTOURS_FOLDERS_PATH, 
+                      cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, 
+                      cfg.CONTOURS_FOLDERS_PATH, 
                       cfg.IMAGES_AUGMENTED_FOLDERS_PATH, cfg.TRANSLATIONS_FOLDERS_PATH,
                       cfg.PARENT_MODEL_PATH,
                       cfg.LAYER, cfg.K, cfg.AUGMENTATION_COUNT,
@@ -19,7 +20,8 @@ if __name__ == "__main__":
 
 
     val = DAVIS2016(cfg.PYTORCH_GEOMETRIC_DAVIS_2016_DATASET_PATH,
-                    cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, cfg.CONTOURS_FOLDERS_PATH, 
+                    cfg.ANNOTATIONS_AUGMENTED_FOLDERS_PATH, 
+                    cfg.CONTOURS_FOLDERS_PATH, 
                     cfg.IMAGES_AUGMENTED_FOLDERS_PATH, cfg.TRANSLATIONS_FOLDERS_PATH,
                     cfg.PARENT_MODEL_PATH,
                     cfg.LAYER, cfg.K, 0,

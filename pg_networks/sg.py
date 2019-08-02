@@ -3,12 +3,11 @@ Simplifying Graph Convolutional Networks
 https://arxiv.org/abs/1902.07153
 """
 
-
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
-
 from torch_geometric.nn import SGConv
+
 
 class SG(torch.nn.Module):
     def __init__(self, in_channels, out_channels):

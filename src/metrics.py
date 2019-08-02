@@ -25,6 +25,7 @@ def db_eval_boundary(foreground_mask,gt_mask,bound_th=0.008):
 		P (float): boundaries precision
 		R (float): boundaries recall
 	"""
+    
 	assert np.atleast_3d(foreground_mask).shape[2] == 1
 
 	bound_pix = bound_th if bound_th >= 1 else \
@@ -86,7 +87,7 @@ def seg2bmap(seg,width=None,height=None):
 
 	 David Martin <dmartin@eecs.berkeley.edu>
 	 January 2003
- """
+    """
 
 	seg = seg.astype(np.bool)
 	seg[seg>0] = 1

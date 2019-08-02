@@ -1,8 +1,13 @@
 """Functions for image computations and visualizations."""
 
+from datetime import datetime
+import os
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+
+import src.config as cfg
 
 
 def close_image(image, closing_kernel_size):
@@ -56,7 +61,7 @@ def compute_combo_img(contour_pred, osvos_img):
     contour_img = cv2.cvtColor(contour_img.astype(np.float32), cv2.COLOR_RGB2GRAY)
     
     # Dilate our image
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(35,35))
     contour_img = cv2.dilate(contour_img, kernel, iterations=1)
     
     # Load OSVOS image
@@ -198,8 +203,8 @@ def plot_img_with_contour_and_translation(img, contour, translation_gt):
     plt.show()
     
 
-def plot_loss(solver):
-    """Plot train and val loss.
+def save_loss(solver):
+    """Save plotted train and val loss.
     
     Parameters
     ----------
@@ -207,13 +212,25 @@ def plot_loss(solver):
         Trained solver class instance
     """
     
+    # Plotting
     plt.figure(figsize=(10,7))
     plt.plot(solver.loss_epoch_history['translation_loss_L2'], '-', label='train loss')
     plt.plot(solver.val_loss_history, '-', label='val loss')
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.legend()
-    plt.show()
+    
+    # Saving
+    datetime_now = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    plot_name = '{}_{}_{}_{}_{}_{}_{}_{}_loss.png'.format(datetime_now,
+                                                           cfg.AUGMENTATION_COUNT,
+                                                           cfg.LAYER, cfg.K, 
+                                                           cfg.NUM_TRAIN_SEQUENCES, 
+                                                           cfg.NUM_VAL_SEQUENCES,
+                                                           cfg.LEARNING_RATE,
+                                                           cfg.WEIGHT_DECAY)
+    plot_path = os.path.join('pg_models', plot_name)
+    plt.savefig(plot_path)
     
 
 def plot_translations(img, contour, translation_gt, translation_pred):

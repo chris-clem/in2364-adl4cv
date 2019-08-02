@@ -4,32 +4,38 @@ import os
 
 import cv2
 import numpy as np
+import pandas as pd
 import torch
 
 from pg_networks.gcn import GCN
+from pg_networks.dynamic_edge import DynamicEdge
 import src.config as cfg
 from src.create_data import create_osvos_model, create_data
 from src.metrics import db_eval_iou, db_eval_boundary
 from src.vis_utils import compute_combo_img, extract_longest_contour, load_gray_img
 
 
-def testing(simple_contour_prediction=False, save_results=False):
+def testing(use_parent_model_results, simple_contour_prediction=False, save_results=False):
     mean_Js_combo = []
     mean_Js_osvos = []
 
     mean_Fs_combo = []
     mean_Fs_osvos = []
+    
+    metrics = {}
 
     # Iterate through val sequences
     for i, sequence in enumerate(cfg.VAL_SEQUENCES):
 
         # Debugging
-        if i > 4: break
+        #if i > 1: break
         print('#{}: {}'.format(i, sequence))
 
         # Get path to images and annotations
-        raw_images_path = os.path.join('pg_datasets/DAVIS_2016/raw/Images', sequence, '0')
-        raw_annotations_path = os.path.join('pg_datasets/DAVIS_2016/raw/Annotations', sequence, '0')
+        raw_images_path = os.path.join('pg_datasets/DAVIS_2016/raw/Images',
+                                       sequence, '0')
+        raw_annotations_path = os.path.join('pg_datasets/DAVIS_2016/raw/Annotations', 
+                                            sequence, '0')
 
         # Get list of frames
         frames = os.listdir(raw_images_path)
@@ -47,11 +53,12 @@ def testing(simple_contour_prediction=False, save_results=False):
         for j, frame in enumerate(frames[:-1]):
 
             # Debugging
-            #if j > 5: break
+            #if j > 3: break
             
             # If first frame, extract contour from gt annotation
             if j == 0:
-                annotation_0_path = os.path.join(raw_annotations_path, frame[:5] + '.png')
+                annotation_0_path = os.path.join(raw_annotations_path, 
+                                                 frame[:5] + '.png')
                 annotation_0_gray = load_gray_img(annotation_0_path)
                 
                 contour_0 = extract_longest_contour(annotation_0_gray, 
@@ -62,7 +69,8 @@ def testing(simple_contour_prediction=False, save_results=False):
             # Create data object
             image_path_0 = os.path.join(raw_images_path, frames[j])
             image_path_1 = os.path.join(raw_images_path, frames[j+1])
-            data = create_data(contour_0, None, image_path_0, image_path_1, osvos_model, cfg.K)
+            data = create_data(contour_0, None, image_path_0, image_path_1, 
+                               osvos_model, cfg.K)
 
             # Forward pass to get outputs
             with torch.no_grad():
@@ -72,8 +80,13 @@ def testing(simple_contour_prediction=False, save_results=False):
             contour_1_pred = np.add(contour_0, translation_0_1_pred)
 
             # Load OSVOS result image
-            osvos_img_1_path = os.path.join(cfg.OSVOS_RESULTS_FOLDERS_PATH, 
-                                            sequence, frames[j+1][:5] + '.png')
+            if use_parent_model_results:
+                osvos_results = cfg.PARENT_MODEL_RESULTS_FOLDERS_PATH
+            else: 
+                osvos_results = cfg.OSVOS_RESULTS_FOLDERS_PATH
+                
+            osvos_img_1_path = os.path.join(osvos_results, sequence, 
+                                            frames[j+1][:5] + '.png')
             osvos_img_1 = cv2.imread(osvos_img_1_path)
             osvos_img_1_gray = cv2.imread(osvos_img_1_path, cv2.IMREAD_GRAYSCALE)
 
@@ -82,21 +95,24 @@ def testing(simple_contour_prediction=False, save_results=False):
 
             # Save results
             if save_results:
-                if not os.path.exists(os.path.join(cfg.COMBO_RESULTS_FOLDERS_PATH, sequence)):
-                    os.makedirs(os.path.join(cfg.COMBO_RESULTS_FOLDERS_PATH, sequence))
+                if not os.path.exists(os.path.join(cfg.COMBO_RESULTS_FOLDERS_PATH, 
+                                                   sequence)):
+                    os.makedirs(os.path.join(cfg.COMBO_RESULTS_FOLDERS_PATH, 
+                                             sequence))
                     
                 combo_img_1_path = os.path.join(cfg.COMBO_RESULTS_FOLDERS_PATH, 
                                                 sequence, frames[j+1][:5] + '.png')
                 cv2.imwrite(combo_img_1_path, combo_img_1*255)
 
                 combo_img_1_blended_path = os.path.join(cfg.COMBO_RESULTS_FOLDERS_PATH, 
-                                                sequence, frames[j+1][:5] + '_blended.png') 
+                                           sequence, frames[j+1][:5] + '_blended.png') 
                 blended = (0.4 * cv2.imread(image_path_1, cv2.IMREAD_GRAYSCALE) + 
                            (0.6 * combo_img_1*255)).astype("uint8")
                 cv2.imwrite(combo_img_1_blended_path, blended)
             
             # Load ground truth annotation
-            annotation_1_path = os.path.join(raw_annotations_path, frames[j+1][:5] + '.png')
+            annotation_1_path = os.path.join(raw_annotations_path, 
+                                             frames[j+1][:5] + '.png')
             annotation_1_gray = cv2.imread(annotation_1_path, cv2.IMREAD_GRAYSCALE)
 
             #Compute J
@@ -129,36 +145,42 @@ def testing(simple_contour_prediction=False, save_results=False):
         mean_J_osvos = np.mean(np.array(Js_osvos))
         mean_F_combo = np.mean(np.array(Fs_combo))
         mean_F_osvos = np.mean(np.array(Fs_osvos))
-
-        print('\tmean_J_combo: {}, mean_J_osvos: {}'.format(mean_J_combo, mean_J_osvos))
-        print('\tmean_F_combo: {}, mean_F_osvos: {}'.format(mean_F_combo, mean_F_osvos))
+        
+        metrics[sequence] = [mean_J_combo, mean_J_osvos, mean_F_combo, mean_F_osvos]
 
         mean_Js_combo.append(mean_J_combo)
         mean_Js_osvos.append(mean_J_osvos)
         mean_Fs_combo.append(mean_F_combo)
         mean_Fs_osvos.append(mean_F_osvos)
 
-    mean_J_combo_overall = np.mean(np.array(mean_Js_combo))
-    mean_J_osvos_overall = np.mean(np.array(mean_Js_osvos))
-    mean_F_combo_overall = np.mean(np.array(mean_Fs_combo))
-    mean_F_osvos_overall = np.mean(np.array(mean_Fs_osvos))
-
-    print('\nmean_J_combo_overall: {}'.format(mean_J_combo_overall))
-    print('mean_J_osvos_overall: {}'.format(mean_J_osvos_overall))
-    print('mean_F_combo_overall: {}'.format(mean_F_combo_overall))
-    print('mean_F_osvos_overall: {}'.format(mean_F_osvos_overall))
+    columns = ['mean_J_combo', 'mean_J_osvos', 'mean_F_combo', 'mean_F_osvos']
+    metrics_df = pd.DataFrame.from_dict(metrics, orient='index', columns=columns)
     
+    metrics_df['mean_J_difference'] = metrics_df.apply(
+        lambda row: row.mean_J_combo - row.mean_J_osvos, axis=1)
+    metrics_df['mean_F_difference'] = metrics_df.apply(
+        lambda row: row.mean_F_combo - row.mean_F_osvos, axis=1)
+    
+    metrics_df = metrics_df.append(metrics_df.describe())
+    print(metrics_df)
+    
+    if use_parent_model_results:
+        filename = cfg.BEST_MODEL[:-4] + '_parent.csv'
+    else: 
+        filename = cfg.BEST_MODEL[:-4] + '_osvos.csv'
+        
+    metrics_df.to_csv(filename)
 
 if __name__ == "__main__": 
     # Load OSVOS to extract feature vectors
     osvos_model = create_osvos_model(cfg.PARENT_MODEL_PATH, cfg.LAYER)
     
     # Load GCN model to get predictions
-    model_path = 'pg_models/2019-07-09_12_37_18_best_model.pth'
-    model = GCN(128, 2)
+    model_path = cfg.BEST_MODEL
+    model = GCN(512, 2)
     model.load_state_dict(torch.load(model_path))
     model.eval()
     model.double()
     
     # Start testing
-    testing()
+    testing(cfg.USE_PARENT_MODEL_RESULTS)

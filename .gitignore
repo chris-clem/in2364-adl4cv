@@ -1,31 +1,18 @@
 .ipynb_checkpoints
 
-DAVIS/
 DAVIS_2016/
 
-evaluations/*
+OSVOS_PyTorch/__pycache__
+OSVOS_PyTorch/dataloaders/__pycache__
+OSVOS_PyTorch/layers/__pycache__
+OSVOS_PyTorch/networks/__pycache__
+OSVOS_PyTorch/util/__pycache__
 
-pg_datasets/DAVIS_2016/*
-pg_datasets/DAVIS_2016_before_augmentation/*
-pg_datasets/__pycache__
-pg_datasets/.ipynb_checkpoints
 pg_datasets/
 
-pg_models/__pycache__
-pg_models/runs
-pg_models/*.pth
+pg_models/
 
 pg_networks/__pycache__    
 
 src/__pycache__ 
 
-OSVOS_PyTorch/__pycache__
-OSVOS_PyTorch/dataloaders/__pycache__
-OSVOS_PyTorch/layers/__pycache__
-OSVOS_PyTorch/models
-OSVOS_PyTorch/mypath.py
-OSVOS_PyTorch/networks/__pycache__
-OSVOS_PyTorch/util/__pycache__
-
-visualization/tsne
-visualization/video_sequences
