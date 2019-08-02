@@ -22,7 +22,7 @@ from OSVOS_PyTorch.train_online import train
 
 
 class DAVIS2016(Dataset):
-     """PyTorch Geometric custom dataset class for DAVIS 2016 data."""
+    """PyTorch Geometric custom dataset class for DAVIS 2016 data."""
         
     def __init__(self, root, 
                  annotations_folders_path, contours_folders_path, 
